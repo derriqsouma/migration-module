@@ -8,13 +8,16 @@ import org.openmrs.*;
 import org.openmrs.api.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.idgen.service.IdentifierSourceService;
+import org.openmrs.module.kenyaui.KenyaUiUtils;
 import org.openmrs.module.kenyaui.annotation.AppPage;
 import org.openmrs.module.migrate.MigrateConstant;
 import org.openmrs.ui.framework.UiUtils;
+import org.openmrs.ui.framework.annotation.SpringBean;
 import org.openmrs.ui.framework.page.PageModel;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
 import java.text.ParseException;
@@ -30,21 +33,58 @@ public class MigrationHomePageController {
 
     @RequestMapping()
     public void controller(UiUtils ui,
-                           @RequestParam(value = "file", required = false) String file,
-                           PageModel model) throws Exception {
+                           @RequestParam(value = "moh361Afile", required = false) String moh361Afile,
+                           @RequestParam(value = "moh361Bfile", required = false) String moh361Bfile,
+                           @RequestParam(value = "moh408file", required = false) String moh408file,
+                           PageModel model,
+                           HttpSession session,
+                           @SpringBean KenyaUiUtils kenyaUi) throws Exception {
 
-        if (file != "") {
-            String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + file;
-            model.addAttribute("file", file);
+        if (moh361Afile != "") {
+            String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + moh361Afile;
+            model.addAttribute("file", moh361Afile);
 
-            readExcelSheet(path);
-        } else {
-            model.addAttribute("file", "");
+            readExcelSheet(path,session,kenyaUi);
+        }
+        if (moh361Bfile !="") {
+            String path = "/home/derric/Desktop/ampath_data/MOH_361B/" + moh361Bfile;
+            model.addAttribute("file", moh361Bfile);
+
+            displayPatient(path);
+        } if (moh408file !="") {
+            String path = "/home/derric/Desktop/ampath_data/MOH_408/" + moh408file;
+            model.addAttribute("file", moh408file);
+
+//            readExcelSheet(path);
+        }
+    }
+
+    private void displayPatient(String path) {
+
+        Patient patient = new Patient();
+
+        PatientService patientService = Context.getPatientService();
+
+        List<Patient> patientList = patientService.getPatients(null, "1596800043", null, true);
+        if(patientList.size() > 0) {
+           throw new APIException("Patient " + patientList.get(0).getFamilyName()  +" already exists");
+
+        }
+
+        List<Patient> allPatients = patientService.getAllPatients();
+        for(Patient p: allPatients){
+           boolean x = p.getPatientIdentifier("Unique Patient Number").getIdentifier().equals("1596800043");
+            if(x){
+                System.out.println("\n\n\n" + p.getFamilyName() + " " + p.getGivenName());
+            }
+            else{
+
+            }
         }
 
     }
 
-    private void readExcelSheet(String path) throws Exception {
+    private void readExcelSheet(String path, HttpSession session, KenyaUiUtils kenyaUi) throws Exception {
         List<List<Object>> sheetData = new ArrayList();
 
         FileInputStream file = new FileInputStream(new File(path));
@@ -92,10 +132,10 @@ public class MigrationHomePageController {
 
         file.close();
 
-        processExcelData(sheetData);
+        processExcelData(sheetData,session,kenyaUi);
     }
 
-    private void processExcelData(List<List<Object>> sheetData) throws ParseException {
+    private void processExcelData(List<List<Object>> sheetData, HttpSession session, KenyaUiUtils kenyaUi) throws ParseException {
 
         for (int i = 0; i < sheetData.size(); i++) {
 
@@ -165,15 +205,31 @@ public class MigrationHomePageController {
                 upn.setPreferred(true);
 
                 patient.addIdentifiers(Arrays.asList(upn, openmrsId, amrId));
-                patientService.savePatient(patient);//saving the patient
-                savePatientObs(patient, rowData);
+                if(!patientService.isIdentifierInUseByAnotherPatient(upn)) {
+                    patientService.savePatient(patient);//saving the patient
+                    savePatientObs(patient, rowData);
+
+                }else {
+                    kenyaUi.notifyError(session, "the patient identifier #"+upn+" already in use by another patient");
+                    System.out.println("\n\n the patient identifier #"+upn+" already in use by another patient");
+                    continue;
+                }
+
             }
             else{
                 amrId.setPreferred(true);
 
                 patient.addIdentifiers(Arrays.asList(openmrsId, amrId));
-                patientService.savePatient(patient);//saving the patient
-                savePatientObs(patient, rowData);
+                if(!patientService.isIdentifierInUseByAnotherPatient(amrId)) {
+                    patientService.savePatient(patient);//saving the patient
+                    savePatientObs(patient, rowData);
+
+                }else {
+                    kenyaUi.notifyError(session, "the patient identifier #"+amrId+" already in use by another patient");
+                    System.out.println("\n\n the patient identifier #"+amrId+" already in use by another patient");
+                    continue;
+                }
+
             }
         }
     }
@@ -190,8 +246,6 @@ public class MigrationHomePageController {
         ProviderService providerService = Context.getProviderService();
         ConceptService conceptService = Context.getConceptService();
         ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
-
-        /*Patient Provider*/
 
 
         /*Patient Program*/
@@ -290,6 +344,7 @@ public class MigrationHomePageController {
 
         Obs whoStageObs = new Obs();//World Health Organization HIV stage
         whoStageObs.setPerson(patient);
+        whoStageObs.setLocation(locationService.getDefaultLocation());
         whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String whoStageAnswer = rowData.get(17).toString();
         checkForValueCodedForWhoStage(whoStageObs, obsService, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));

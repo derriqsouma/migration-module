@@ -24,20 +24,33 @@
         <div id="tabs-1">
 
             <form action="migrationHome.page" method="post">
-                <input type="file" name="file" id="fileUpload" size="50"/>
+                <input type="file" name="moh361Afile" id="moh361A" size="50"/>
                 <br/><br/>
                 <div class="ke-form-footer">
                     <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
                 </div>
             </form>
-            ${file}
 
         </div>
         <div id="tabs-2">
-            ${ ui.includeFragment("migrate", "moh361B")}
+
+            <form action="migrationHome.page" method="post">
+                <input type="file" name="moh361Bfile" id="moh361B" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
 
         </div>
         <div id="tabs-3">
+            <form action="migrationHome.page" method="post">
+                <input type="file" name="moh408file" id="moh408" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
 
         </div>
     </div>
@@ -46,7 +59,22 @@
 <script>
 
     jQuery(function() {
-        jQuery( "#tabs" ).tabs();
+        var index = 'key';
+        var dataStore = window.sessionStorage;
+        try{
+            var oldIndex = dataStore.getItem(index);
+        }catch(e){
+            var oldIndex = 0;
+        }
+
+        jQuery( "#tabs " ).tabs({
+            event: "mouseover",
+            active: oldIndex,
+            activate: function(event, ui){
+                var newIndex = ui.newTab.parent().children().index(ui.newTab);
+                dataStore.setItem(index, newIndex)
+            }
+        });
 
     });
 </script>
