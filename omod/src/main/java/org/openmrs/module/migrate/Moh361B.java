@@ -1,8 +1,6 @@
 package org.openmrs.module.migrate;
 
 import org.openmrs.Patient;
-import org.openmrs.PatientIdentifierType;
-import org.openmrs.api.APIException;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.kenyaui.KenyaUiUtils;
@@ -30,26 +28,31 @@ public class Moh361B {
         ReadExcelSheet readExcelSheet = new ReadExcelSheet();
         sheetData = readExcelSheet.readExcelSheet(path);
 
-        System.out.println("***\n"+sheetData.size()+"\n"+sheetData);
-        kenyaUi.notifyError(session, "testing");
+        checkForPatient(sheetData);
+
     }
-    private void checkForPatient() {
+    private void checkForPatient(List<List<Object>> sheetData) {
         PatientService patientService = Context.getPatientService();
-        Patient patient = new Patient();
-        PatientIdentifierType upn = patientService.getPatientIdentifierTypeByUuid("05ee9cf4-7242-4a17-b4d4-00f707265c8a");
 
-        List<Patient> allPatients = patientService.getAllPatients();
-//        for(Patient p: allPatients){
-//            if(p.getPatientIdentifier(upn.getName()).getIdentifier().equals("1579700001")){
-//                throw new APIException("Patient " + p.getNames()  +" already exists");
-//            }
-//        }
+        for (int i = 1; i < sheetData.size(); i++) {
+            List<Object> rowData = sheetData.get(i);
+            String upn = rowData.get(2).toString().replaceAll("[^\\d]", "");
+            String amrId = rowData.get(5).toString();
 
-        List<Patient> patientList = patientService.getPatients(null, "1596800043", null, true);
-        if(patientList.size() > 0) {
-            throw new APIException("Patient " + patientList.get(0).getFamilyName()  +" already exists");
+            List<Patient> patientList = patientService.getPatients(null, upn, null, true);
+            List<Patient> patientList1 = patientService.getPatients(null, amrId, null, true);
 
+            Patient patient = new Patient();
+
+            if (patientList.size() > 0 || patientList1.size() > 0) {
+                if (upn.isEmpty()){
+                    patient = patientService.getPatient(patientList.get(0).getPatientId());
+
+                }else {
+                    patient = patientService.getPatient(patientList.get(0).getPatientId());
+
+                }
+            }
         }
-
     }
 }

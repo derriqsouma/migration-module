@@ -19,6 +19,7 @@ import java.util.List;
  */
 public class Moh361A {
     String path;
+    int counter=0;
     HttpSession session;
     KenyaUiUtils kenyaUi;
     public Moh361A(String path, HttpSession session, KenyaUiUtils kenyaUi){
@@ -62,77 +63,80 @@ public class Moh361A {
                 fName = fullNames[0];
                 lName = fullNames[1];
             }
+            if (rowData.get(6).toString() != "") {
+                Patient patient = new Patient();
 
-            Patient patient = new Patient();
 
+                PatientService patientService = Context.getPatientService();
+                LocationService locationService = Context.getLocationService();
 
-            PatientService patientService = Context.getPatientService();
-            LocationService locationService = Context.getLocationService();
+                PersonName personName = new PersonName();
+                personName.setFamilyName(lName);
+                personName.setGivenName(fName);
+                personName.setMiddleName(mName);
 
-            PersonName personName = new PersonName();
-            personName.setFamilyName(lName);
-            personName.setGivenName(fName);
-            personName.setMiddleName(mName);
+                patient.addName(personName);
+                patient.setGender(gender);
+                patient.setBirthdate(dob);
 
-            patient.addName(personName);
-            patient.setGender(gender);
-            patient.setBirthdate(dob);
+                PatientIdentifier openmrsId = new PatientIdentifier();
+                //generating open mrs id
+                PatientIdentifierType openmrsIdType = patientService.getPatientIdentifierTypeByUuid("dfacd928-0370-4315-99d7-6ec1c9f7ae76");
+                String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "Migration");
+                openmrsId.setIdentifierType(openmrsIdType);
+                openmrsId.setDateCreated(new Date());
+                openmrsId.setLocation(locationService.getDefaultLocation());
+                openmrsId.setIdentifier(generated);
+                openmrsId.setVoided(false);
 
-            PatientIdentifier openmrsId = new PatientIdentifier();
-            //generating open mrs id
-            PatientIdentifierType openmrsIdType = patientService.getPatientIdentifierTypeByUuid("dfacd928-0370-4315-99d7-6ec1c9f7ae76");
-            String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "Migration");
-            openmrsId.setIdentifierType(openmrsIdType);
-            openmrsId.setDateCreated(new Date());
-            openmrsId.setLocation(locationService.getDefaultLocation());
-            openmrsId.setIdentifier(generated);
-            openmrsId.setVoided(false);
+                PatientIdentifier amrId = new PatientIdentifier();
+                amrId.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("8d79403a-c2cc-11de-8d13-0010c6dffd0f"));
+                amrId.setDateCreated(new Date());
+                amrId.setLocation(locationService.getDefaultLocation());
+                amrId.setIdentifier((String) rowData.get(5));
+                amrId.setVoided(false);
 
-            PatientIdentifier amrId = new PatientIdentifier();
-            amrId.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("8d79403a-c2cc-11de-8d13-0010c6dffd0f"));
-            amrId.setDateCreated(new Date());
-            amrId.setLocation(locationService.getDefaultLocation());
-            amrId.setIdentifier((String) rowData.get(5));
-            amrId.setVoided(false);
+                PatientIdentifier upn = null;
+                if (rowData.get(4).toString() != "") {
+                    upn = new PatientIdentifier();
+                    upn.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("05ee9cf4-7242-4a17-b4d4-00f707265c8a"));
+                    upn.setDateCreated(new Date());
+                    upn.setLocation(locationService.getDefaultLocation());
+                    upn.setIdentifier(rowData.get(4).toString().replaceAll("[^\\d]", ""));
+                    upn.setVoided(false);
+                    upn.setPreferred(true);
 
-            PatientIdentifier upn = null;
-            if (rowData.get(4).toString() != "") {
-                upn = new PatientIdentifier();
-                upn.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("05ee9cf4-7242-4a17-b4d4-00f707265c8a"));
-                upn.setDateCreated(new Date());
-                upn.setLocation(locationService.getDefaultLocation());
-                upn.setIdentifier(rowData.get(4).toString().replaceAll("[^\\d]", ""));
-                upn.setVoided(false);
-                upn.setPreferred(true);
+                    patient.addIdentifiers(Arrays.asList(upn, openmrsId, amrId));
+                    if (!patientService.isIdentifierInUseByAnotherPatient(upn)) {
+                        patientService.savePatient(patient);//saving the patient
+                        savePatientObs(patient, rowData);
+                        counter += 1;
+                    } else {
+                        kenyaUi.notifyError(session, "the patient identifier #" + upn + " already in use by another patient");
+                        System.out.println("\n\n the patient identifier #" + upn + " already in use by another patient");
+                        continue;
+                    }
 
-                patient.addIdentifiers(Arrays.asList(upn, openmrsId, amrId));
-                if(!patientService.isIdentifierInUseByAnotherPatient(upn)) {
-                    patientService.savePatient(patient);//saving the patient
-                    savePatientObs(patient, rowData);
+                } else {
+                    amrId.setPreferred(true);
 
-                }else {
-                    kenyaUi.notifyError(session, "the patient identifier #"+upn+" already in use by another patient");
-                    System.out.println("\n\n the patient identifier #"+upn+" already in use by another patient");
-                    continue;
+                    patient.addIdentifiers(Arrays.asList(openmrsId, amrId));
+                    if (!patientService.isIdentifierInUseByAnotherPatient(amrId)) {
+                        patientService.savePatient(patient);//saving the patient
+                        savePatientObs(patient, rowData);
+                        counter += 1;
+                    } else {
+                        kenyaUi.notifyError(session, "the patient identifier #" + amrId + " already in use by another patient");
+                        System.out.println("\n\n the patient identifier #" + amrId + " already in use by another patient");
+                        continue;
+                    }
+
                 }
-
-            }
-            else{
-                amrId.setPreferred(true);
-
-                patient.addIdentifiers(Arrays.asList(openmrsId, amrId));
-                if(!patientService.isIdentifierInUseByAnotherPatient(amrId)) {
-                    patientService.savePatient(patient);//saving the patient
-                    savePatientObs(patient, rowData);
-
-                }else {
-                    kenyaUi.notifyError(session, "the patient identifier #"+amrId+" already in use by another patient");
-                    System.out.println("\n\n the patient identifier #"+amrId+" already in use by another patient");
-                    continue;
-                }
-
             }
         }
+        kenyaUi.notifySuccess(session, " " + counter + " patient(s) added");
+        System.out.println(" \n\n" + counter + " patient(s) added");
+
     }
 
     private void savePatientObs(Patient patient, List<Object> rowData) throws ParseException {
@@ -236,19 +240,16 @@ public class Moh361A {
         dateArtStartedObs.setValueDate(convertToDate(rowData.get(20).toString()));
         consultationEncounter.addObs(dateArtStartedObs);
 
-        Obs dateEligibleForArvObs = new Obs();//date eligible for ARVs
-        dateEligibleForArvObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
-        dateEligibleForArvObs.setPerson(patient);
-        dateEligibleForArvObs.setConcept(conceptService.getConceptByUuid("162227AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        dateEligibleForArvObs.setValueDate(convertToDate(rowData.get(18).toString()));
-        consultationEncounter.addObs(dateEligibleForArvObs);
-
         Obs whoStageObs = new Obs();//World Health Organization HIV stage
         whoStageObs.setPerson(patient);
         whoStageObs.setLocation(locationService.getDefaultLocation());
         whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String whoStageAnswer = rowData.get(17).toString();
-        checkForValueCodedForWhoStage(whoStageObs, obsService, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+        if(whoStageAnswer !=""){
+            String[] whoStage = whoStageAnswer.split("\\n");
+            whoStageObs.setObsDatetime(convertToDate(whoStage[1]));
+        }
+        checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
         consultationEncounter.addObs(whoStageObs);
 
         encounterService.saveEncounter(consultationEncounter);//saving the consultationEncounter
@@ -275,6 +276,135 @@ public class Moh361A {
         getCtxObs(rowData, patient);
 
         checkIfPregnant(patient, rowData, concept, conceptService);
+
+        checkForArvEligibility(rowData,patient);
+    }
+
+    private void checkForArvEligibility(List<Object> rowData, Patient patient) throws ParseException {
+
+        Encounter encounter = new Encounter();
+        EncounterService encounterService = Context.getEncounterService();
+        ConceptService conceptService = Context.getConceptService();
+        FormService formService = Context.getFormService();
+        LocationService locationService = Context.getLocationService();
+        ProviderService providerService = Context.getProviderService();
+
+        encounter.setPatient(patient);
+        encounter.setForm(formService.getFormByUuid("23b4ebbd-29ad-455e-be0e-04aa6bc30798"));
+        encounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
+        encounter.setLocation(locationService.getLocationByUuid("f2904f27-f35f-41aa-aad1-eb7325cf72f6"));
+        encounter.setDateCreated(new Date());
+        encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        encounter.setEncounterDatetime(convertToDate(rowData.get(18).toString()));
+
+        Obs dateEligibleForArvObs = new Obs();//date eligible for ARVs
+        dateEligibleForArvObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+        dateEligibleForArvObs.setPerson(patient);
+        dateEligibleForArvObs.setConcept(conceptService.getConceptByUuid("162227AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        dateEligibleForArvObs.setValueDate(convertToDate(rowData.get(18).toString()));
+        encounter.addObs(dateEligibleForArvObs);
+
+        Obs whoStageObs = new Obs();//WHO Stage Obs
+        whoStageObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+        whoStageObs.setPerson(patient);
+        whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+
+        Obs cd4PercentObs = new Obs();
+        cd4PercentObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+        cd4PercentObs.setPerson(patient);
+        cd4PercentObs.setConcept(conceptService.getConceptByUuid("730AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+
+        Obs cd4CountObs = new Obs();
+        cd4CountObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+        cd4CountObs.setPerson(patient);
+        cd4CountObs.setConcept(conceptService.getConceptByUuid("5497AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+
+        getReasonForArvsEligibility(patient,whoStageObs,cd4PercentObs,cd4CountObs,rowData,conceptService);
+
+        encounter.addObs(whoStageObs);
+        encounter.addObs(cd4PercentObs);
+        encounter.addObs(cd4CountObs);
+
+        if (rowData.get(19).toString() != "") {
+            encounterService.saveEncounter(encounter);
+        }
+    }
+
+    private void getReasonForArvsEligibility(Patient patient, Obs whoStageObs, Obs cd4PercentObs, Obs cd4CountObs, List<Object> rowData, ConceptService conceptService) throws ParseException {
+        String[] arvEligibility;
+        String[] arvReasons;
+        String whoStageAnswer;
+
+        if (rowData.get(19).toString() != "") {
+            arvEligibility = rowData.get(19).toString().split("\\n");
+            whoStageAnswer = arvEligibility[1];
+
+            if (arvEligibility[0].contains("+")) {
+                arvReasons = arvEligibility[0].split("\\+");
+
+                if (arvReasons[1].contains("CD4")) {//if CD4
+                    if (arvEligibility.length == 3) {
+                        if (arvEligibility[2].contains("%")) {//if CD4 %
+                            String[] cd4Percent = arvEligibility[2].trim().split("\\:");
+
+                            cd4PercentObs.setValueNumeric(Double.valueOf(cd4Percent[1]));
+                            checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                        } else {//else CD4 count
+
+                            String[] cd4Count = arvEligibility[2].trim().split("\\:");
+
+                            cd4CountObs.setValueNumeric(Double.valueOf(cd4Count[1]));
+                            checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                        }
+
+                    }else if(arvEligibility.length == 4){
+                        String[] cd4Count = arvEligibility[2].trim().split("\\:");
+                        String[] cd4Percent = arvEligibility[3].trim().split("\\:");
+
+                        cd4PercentObs.setValueNumeric(Double.valueOf(cd4Percent[1]));
+                        cd4CountObs.setValueNumeric(Double.valueOf(cd4Count[1]));
+                        checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                    }
+                } else {//else HIV DNA PCR
+                    String[] hivDnaPcr = arvEligibility[2].trim().split("\\:");
+
+                    checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                    enrollInToMch_csProgram(rowData, patient);
+                }
+
+            } else {//clinical only and WHO Stage
+
+                checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+
+            }
+
+        }
+
+    }
+
+    private void enrollInToMch_csProgram(List<Object> rowData, Patient patient) throws ParseException {
+
+        EncounterService encounterService = Context.getEncounterService();
+        ConceptService conceptService = Context.getConceptService();
+        FormService formService = Context.getFormService();
+        LocationService locationService = Context.getLocationService();
+        ProviderService providerService = Context.getProviderService();
+        ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
+
+        Encounter mch_csEnrollmentEncounter = new Encounter();
+        mch_csEnrollmentEncounter.setPatient(patient);
+        mch_csEnrollmentEncounter.setForm(formService.getFormByUuid("90a18f0c-17cd-4eec-8204-5af52e8d77cf"));
+        mch_csEnrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("9d8498a4-372d-4dc4-a809-513a2434621e"));
+        mch_csEnrollmentEncounter.setLocation(locationService.getDefaultLocation());
+        mch_csEnrollmentEncounter.setDateCreated(new Date());
+        mch_csEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        mch_csEnrollmentEncounter.setEncounterDatetime(convertToDate(rowData.get(18).toString()));
+
+        PatientProgram mch_csProgram = new PatientProgram();
+        mch_csProgram.setPatient(patient);//enroll in HIV Program
+        mch_csProgram.setProgram(workflowService.getProgramByUuid("c2ecdf11-97cd-432a-a971-cfd9bd296b83"));
+        mch_csProgram.setDateEnrolled(convertToDate(rowData.get(18).toString()));
+        workflowService.savePatientProgram(mch_csProgram);
     }
 
     private void checkIfPregnant(Patient patient, List<Object> rowData, Concept concept, ConceptService conceptService) throws ParseException {
@@ -547,11 +677,10 @@ public class Moh361A {
         return Double.valueOf(differenceInDays);
     }
 
-    private void checkForValueCodedForWhoStage(Obs obs, ObsService obsService, ConceptService conceptService, String whoStageAnswer, Double age) throws ParseException {
+    private void checkForValueCodedForWhoStage(Obs obs, ConceptService conceptService, String whoStageAnswer, Double age){
 
         if (whoStageAnswer != "") {
             String[] whoStage = whoStageAnswer.split("\\n");
-            obs.setObsDatetime(convertToDate(whoStage[1]));
 
             if (whoStage[0].equals("WHO Stage 1")) {
                 if (age < 15) {
