@@ -68,7 +68,7 @@
         }
 
         jQuery( "#tabs " ).tabs({
-            event: "mouseover",
+//            event: "mouseover",
             active: oldIndex,
             activate: function(event, ui){
                 var newIndex = ui.newTab.parent().children().index(ui.newTab);

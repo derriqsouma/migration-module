@@ -22,6 +22,15 @@ public class Moh361A {
     int counter=0;
     HttpSession session;
     KenyaUiUtils kenyaUi;
+    ObsService obsService = Context.getObsService();
+    EncounterService encounterService = Context.getEncounterService();
+    LocationService locationService = Context.getLocationService();
+    FormService formService = Context.getFormService();
+    ProviderService providerService = Context.getProviderService();
+    ConceptService conceptService = Context.getConceptService();
+    ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
+    PatientService patientService = Context.getPatientService();
+
     public Moh361A(String path, HttpSession session, KenyaUiUtils kenyaUi){
         this.path = path;
         this.session = session;
@@ -34,10 +43,10 @@ public class Moh361A {
         ReadExcelSheet readExcelSheet = new ReadExcelSheet();
         sheetData = readExcelSheet.readExcelSheet(path);
 
-        processExcelData(sheetData,session,kenyaUi);
+        processExcelData(sheetData);
     }
 
-    private void processExcelData(List<List<Object>> sheetData, HttpSession session, KenyaUiUtils kenyaUi) throws ParseException {
+    private void processExcelData(List<List<Object>> sheetData) throws ParseException {
 
         for (int i = 0; i < sheetData.size(); i++) {
 
@@ -65,10 +74,6 @@ public class Moh361A {
             }
             if (rowData.get(6).toString() != "") {
                 Patient patient = new Patient();
-
-
-                PatientService patientService = Context.getPatientService();
-                LocationService locationService = Context.getLocationService();
 
                 PersonName personName = new PersonName();
                 personName.setFamilyName(lName);
@@ -141,18 +146,6 @@ public class Moh361A {
 
     private void savePatientObs(Patient patient, List<Object> rowData) throws ParseException {
 
-        Provider provider = new Provider();
-        Concept concept = new Concept();
-
-        ObsService obsService = Context.getObsService();
-        EncounterService encounterService = Context.getEncounterService();
-        LocationService locationService = Context.getLocationService();
-        FormService formService = Context.getFormService();
-        ProviderService providerService = Context.getProviderService();
-        ConceptService conceptService = Context.getConceptService();
-        ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
-
-
         /*Patient Program*/
         if (rowData.get(4).toString() != "") {
             PatientProgram hivProgram = new PatientProgram();
@@ -197,7 +190,7 @@ public class Moh361A {
         entryPointObs.setPerson(patient);
         entryPointObs.setConcept(conceptService.getConceptByUuid("160540AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String entryPointAnswer = rowData.get(10).toString();
-        checkForValueCodedForEntryPoint(entryPointObs, obsService, conceptService, entryPointAnswer);
+        checkForValueCodedForEntryPoint(entryPointObs, entryPointAnswer);
         enrollmentEncounter.addObs(entryPointObs);
 
         Obs transferInObs = new Obs();//transfer in
@@ -205,7 +198,7 @@ public class Moh361A {
         transferInObs.setPerson(patient);
         transferInObs.setConcept(conceptService.getConceptByUuid("160563AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String isTransferAnswer = rowData.get(1).toString();
-        checkForValueCodedForIsTransferIn(transferInObs, conceptService, isTransferAnswer, rowData, patient, enrollmentEncounter);
+        checkForValueCodedForIsTransferIn(transferInObs, isTransferAnswer, rowData, patient, enrollmentEncounter);
         enrollmentEncounter.addObs(transferInObs);
 
         Obs dateConfirmedHivObs = new Obs();//Date confirmed HIV+
@@ -249,7 +242,7 @@ public class Moh361A {
             String[] whoStage = whoStageAnswer.split("\\n");
             whoStageObs.setObsDatetime(convertToDate(whoStage[1]));
         }
-        checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+        checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
         consultationEncounter.addObs(whoStageObs);
 
         encounterService.saveEncounter(consultationEncounter);//saving the consultationEncounter
@@ -275,7 +268,7 @@ public class Moh361A {
 
         getCtxObs(rowData, patient);
 
-        checkIfPregnant(patient, rowData, concept, conceptService);
+        checkIfPregnant(patient, rowData);
 
         checkForArvEligibility(rowData,patient);
     }
@@ -283,12 +276,6 @@ public class Moh361A {
     private void checkForArvEligibility(List<Object> rowData, Patient patient) throws ParseException {
 
         Encounter encounter = new Encounter();
-        EncounterService encounterService = Context.getEncounterService();
-        ConceptService conceptService = Context.getConceptService();
-        FormService formService = Context.getFormService();
-        LocationService locationService = Context.getLocationService();
-        ProviderService providerService = Context.getProviderService();
-
         encounter.setPatient(patient);
         encounter.setForm(formService.getFormByUuid("23b4ebbd-29ad-455e-be0e-04aa6bc30798"));
         encounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
@@ -319,7 +306,7 @@ public class Moh361A {
         cd4CountObs.setPerson(patient);
         cd4CountObs.setConcept(conceptService.getConceptByUuid("5497AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 
-        getReasonForArvsEligibility(patient,whoStageObs,cd4PercentObs,cd4CountObs,rowData,conceptService);
+        getReasonForArvsEligibility(patient,whoStageObs,cd4PercentObs,cd4CountObs,rowData);
 
         encounter.addObs(whoStageObs);
         encounter.addObs(cd4PercentObs);
@@ -330,7 +317,7 @@ public class Moh361A {
         }
     }
 
-    private void getReasonForArvsEligibility(Patient patient, Obs whoStageObs, Obs cd4PercentObs, Obs cd4CountObs, List<Object> rowData, ConceptService conceptService) throws ParseException {
+    private void getReasonForArvsEligibility(Patient patient, Obs whoStageObs, Obs cd4PercentObs, Obs cd4CountObs, List<Object> rowData) throws ParseException {
         String[] arvEligibility;
         String[] arvReasons;
         String whoStageAnswer;
@@ -340,21 +327,46 @@ public class Moh361A {
             whoStageAnswer = arvEligibility[1];
 
             if (arvEligibility[0].contains("+")) {
-                arvReasons = arvEligibility[0].split("\\+");
 
-                if (arvReasons[1].contains("CD4")) {//if CD4
-                    if (arvEligibility.length == 3) {
+                if (arvEligibility[0].contains("CD4") && arvEligibility[0].contains("HIV DNA PCR")) {//if CD4
+
+                    enrollInToMch_csProgram(rowData, patient);
+
+                    if (arvEligibility.length == 4) {
                         if (arvEligibility[2].contains("%")) {//if CD4 %
                             String[] cd4Percent = arvEligibility[2].trim().split("\\:");
 
                             cd4PercentObs.setValueNumeric(Double.valueOf(cd4Percent[1]));
-                            checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                            checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
                         } else {//else CD4 count
 
                             String[] cd4Count = arvEligibility[2].trim().split("\\:");
 
                             cd4CountObs.setValueNumeric(Double.valueOf(cd4Count[1]));
-                            checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                            checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                        }
+
+                    }else if(arvEligibility.length == 5){
+                        String[] cd4Count = arvEligibility[2].trim().split("\\:");
+                        String[] cd4Percent = arvEligibility[3].trim().split("\\:");
+
+                        cd4PercentObs.setValueNumeric(Double.valueOf(cd4Percent[1]));
+                        cd4CountObs.setValueNumeric(Double.valueOf(cd4Count[1]));
+                        checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                    }
+                }else if (arvEligibility[0].contains("CD4")) {//if CD4
+                    if (arvEligibility.length == 3) {
+                        if (arvEligibility[2].contains("%")) {//if CD4 %
+                            String[] cd4Percent = arvEligibility[2].trim().split("\\:");
+
+                            cd4PercentObs.setValueNumeric(Double.valueOf(cd4Percent[1]));
+                            checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                        } else {//else CD4 count
+
+                            String[] cd4Count = arvEligibility[2].trim().split("\\:");
+
+                            cd4CountObs.setValueNumeric(Double.valueOf(cd4Count[1]));
+                            checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
                         }
 
                     }else if(arvEligibility.length == 4){
@@ -363,18 +375,18 @@ public class Moh361A {
 
                         cd4PercentObs.setValueNumeric(Double.valueOf(cd4Percent[1]));
                         cd4CountObs.setValueNumeric(Double.valueOf(cd4Count[1]));
-                        checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                        checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
                     }
                 } else {//else HIV DNA PCR
                     String[] hivDnaPcr = arvEligibility[2].trim().split("\\:");
 
-                    checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                    checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
                     enrollInToMch_csProgram(rowData, patient);
                 }
 
             } else {//clinical only and WHO Stage
 
-                checkForValueCodedForWhoStage(whoStageObs, conceptService, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
+                checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
 
             }
 
@@ -383,13 +395,6 @@ public class Moh361A {
     }
 
     private void enrollInToMch_csProgram(List<Object> rowData, Patient patient) throws ParseException {
-
-        EncounterService encounterService = Context.getEncounterService();
-        ConceptService conceptService = Context.getConceptService();
-        FormService formService = Context.getFormService();
-        LocationService locationService = Context.getLocationService();
-        ProviderService providerService = Context.getProviderService();
-        ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
 
         Encounter mch_csEnrollmentEncounter = new Encounter();
         mch_csEnrollmentEncounter.setPatient(patient);
@@ -407,14 +412,9 @@ public class Moh361A {
         workflowService.savePatientProgram(mch_csProgram);
     }
 
-    private void checkIfPregnant(Patient patient, List<Object> rowData, Concept concept, ConceptService conceptService) throws ParseException {
+    private void checkIfPregnant(Patient patient, List<Object> rowData) throws ParseException {
         String gender =rowData.get(9).toString();
         String isPregnant = rowData.get(15).toString();
-
-        FormService formService = Context.getFormService();
-        ProviderService providerService = Context.getProviderService();
-        EncounterService encounterService = Context.getEncounterService();
-        LocationService locationService = Context.getLocationService();
 
         if (gender.contains("F")){
             if (isPregnant != ""){
@@ -453,7 +453,7 @@ public class Moh361A {
     }
 
     private void computeLocation(Encounter hivLastClinicalEncounter, List<Object> rowData) {
-        LocationService locationService = Context.getLocationService();
+
         String location = rowData.get(22).toString();
 
         if (location.contains("Amase")){
@@ -547,13 +547,6 @@ public class Moh361A {
         String[] tbDates = enrolledInTb.toString().split("\\n");
         String[] dates1 = tbDates[0].trim().split("-");
 
-        EncounterService encounterService = Context.getEncounterService();
-        ConceptService conceptService = Context.getConceptService();
-        FormService formService = Context.getFormService();
-        LocationService locationService = Context.getLocationService();
-        ProviderService providerService = Context.getProviderService();
-        ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
-
         Encounter tbEnrollmentEncounter = new Encounter();
         tbEnrollmentEncounter.setPatient(patient);
         tbEnrollmentEncounter.setForm(formService.getFormByUuid("89994550-9939-40f3-afa6-173bce445c79"));
@@ -602,11 +595,6 @@ public class Moh361A {
     }
 
     private void getCtxObs(List<Object> rowData, Patient patient) throws ParseException {
-        ConceptService conceptService = Context.getConceptService();
-        FormService formService = Context.getFormService();
-        EncounterService encounterService = Context.getEncounterService();
-        ProviderService providerService = Context.getProviderService();
-        LocationService locationService = Context.getLocationService();
 
         if (rowData.get(12) != "") {
             String[] ctxDates = rowData.get(12).toString().split("\\n");
@@ -677,7 +665,7 @@ public class Moh361A {
         return Double.valueOf(differenceInDays);
     }
 
-    private void checkForValueCodedForWhoStage(Obs obs, ConceptService conceptService, String whoStageAnswer, Double age){
+    private void checkForValueCodedForWhoStage(Obs obs, String whoStageAnswer, Double age){
 
         if (whoStageAnswer != "") {
             String[] whoStage = whoStageAnswer.split("\\n");
@@ -714,7 +702,7 @@ public class Moh361A {
         }
     }
 
-    private void checkForValueCodedForIsTransferIn(Obs obs, ConceptService conceptService, String isTransferAnswer, List<Object> rowData, Patient patient, Encounter enrollmentEncounter) throws ParseException {
+    private void checkForValueCodedForIsTransferIn(Obs obs, String isTransferAnswer, List<Object> rowData, Patient patient, Encounter enrollmentEncounter) throws ParseException {
 
         if (isTransferAnswer.equals("Transfer In")) {
             obs.setValueCoded(conceptService.getConceptByUuid("1065AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
@@ -731,7 +719,7 @@ public class Moh361A {
         }
     }
 
-    private void checkForValueCodedForEntryPoint(Obs obs, ObsService obsService, ConceptService conceptService, String entryPointAnswer) {
+    private void checkForValueCodedForEntryPoint(Obs obs, String entryPointAnswer) {
 
         if (entryPointAnswer.equals("VCT")) {
 
