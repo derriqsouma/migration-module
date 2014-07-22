@@ -27,17 +27,17 @@
     </bean>
 
     <!-- Forms -->
-    <bean id="migrate.form.migratedata" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+    <!--<bean id="migrate.form.migratedata" class="org.openmrs.module.kenyacore.form.FormDescriptor">
         <property name="targetUuid" value="71d53282-f7a9-11e3-bb18-28924a18f0d4" />
         <property name="icon" value="migrate:forms/icon-data.png" />
         <property name="htmlform" value="migrate:migratedata.html" />
-    </bean>
+    </bean>-->
 
     <bean id="migrate.config.form" class="org.openmrs.module.kenyacore.form.FormConfiguration">
         <!-- Example of adding a form to the general visit form list -->
         <property name="commonVisitForms">
             <set>
-                <ref bean="migrate.form.migratedata" />
+                <!--<ref bean="migrate.form.migratedata" />-->
             </set>
         </property>
     </bean>

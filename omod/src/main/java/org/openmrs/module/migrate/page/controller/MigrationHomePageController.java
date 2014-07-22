@@ -48,8 +48,10 @@ public class MigrationHomePageController {
 
         if (moh408file !="") {
             String path = "/home/derric/Desktop/ampath_data/MOH_408/" + moh408file;
-            Moh408 moh408 = new Moh408(path);
+            Moh408 moh408 = new Moh408(path,session,kenyaUi);
+            moh408.initMoh408();
         }
+
     }
 
 }
