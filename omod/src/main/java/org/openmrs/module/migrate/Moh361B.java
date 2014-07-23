@@ -81,7 +81,7 @@ public class Moh361B {
             currentDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
             currentDrugOrder.setStartDate(convertToDate(rowData.get(1).toString()));
             currentDrugOrder.setFrequency("");
-           /* currentDrugOrder.setDose(300.0);*/
+            currentDrugOrder.setDose(300.0);
             currentDrugOrder.setUnits("mg");
 
             setDrugsConcepts(currentDrugOrder, firstRegimen[i]);
@@ -110,7 +110,7 @@ public class Moh361B {
                 lastDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
                 lastDrugOrder.setStartDate(convertToDate(rowData.get(16).toString()));
                 lastDrugOrder.setFrequency("");
-               /* lastDrugOrder.setDose(300.00);*/
+                lastDrugOrder.setDose(300.00);
                 lastDrugOrder.setUnits("mg");
 
                 setDrugsConcepts(lastDrugOrder, lastRegimen[i]);
@@ -258,6 +258,19 @@ public class Moh361B {
         }
 
         encounterService.saveEncounter(encounter);
+
+        Encounter lastEncounter = new Encounter();
+        lastEncounter.setPatient(patient);
+        lastEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
+        lastEncounter.setLocation(locationService.getDefaultLocation());
+        lastEncounter.setDateCreated(new Date());
+        lastEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        lastEncounter.setEncounterDatetime(convertToDate(rowData.get(22).toString()));
+
+        if (rowData.get(22) != ""){
+            encounterService.saveEncounter(lastEncounter);
+        }
+
     }
 
     private void checkForValueCodedForWhoStage(Obs obs, String whoStageAnswer){
