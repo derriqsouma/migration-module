@@ -34,6 +34,7 @@ public class Moh408 {
     ProviderService providerService = Context.getProviderService();
     ConceptService conceptService = Context.getConceptService();
     ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
+    ConvertStringToDate convertStringToDate = new ConvertStringToDate();
     PatientService patientService = Context.getPatientService();
     PersonService personService = Context.getPersonService();
 
@@ -58,7 +59,7 @@ public class Moh408 {
             String[] fullNames;
             String fName = "", mName = "", lName = "";
             String gender = (String) rowData.get(7);
-            Date dob = convertToDate((String) rowData.get(6));
+            Date dob = convertStringToDate.convert((String) rowData.get(6));
             fullNames = String.valueOf(rowData.get(4)).replaceAll("\\s+", " ").split(" ");
 
             if (fullNames.length == 4) {
@@ -127,7 +128,7 @@ public class Moh408 {
         PatientProgram mch_csProgram = new PatientProgram();//enroll into MCHCS Program
         mch_csProgram.setPatient(patient);
         mch_csProgram.setProgram(workflowService.getProgramByUuid("c2ecdf11-97cd-432a-a971-cfd9bd296b83"));
-        mch_csProgram.setDateEnrolled(convertToDate(rowData.get(1).toString()));
+        mch_csProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(1).toString()));
         workflowService.savePatientProgram(mch_csProgram);
 
         addRelationship(rowData,patient);
@@ -142,11 +143,11 @@ public class Moh408 {
 
         mch_csEnrollmentEncounter.setDateCreated(new Date());
         mch_csEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        mch_csEnrollmentEncounter.setEncounterDatetime(convertToDate(rowData.get(1).toString()));
+        mch_csEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(1).toString()));
 
         //enrollment obs
         Obs obs = new Obs();
-        obs.setObsDatetime(convertToDate(rowData.get(1).toString()));
+        obs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
         obs.setPerson(patient);
         obs.setConcept(conceptService.getConceptByUuid("5303AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         if (rowData.get(56) !=""){
@@ -183,28 +184,28 @@ public class Moh408 {
             LabTestsGroupObs.setPerson(patient);
 
             Obs sampleCollectionDate = new Obs();// sample collection dates
-            sampleCollectionDate.setObsDatetime(convertToDate(rowData.get(17).toString()));
+            sampleCollectionDate.setObsDatetime(convertStringToDate.convert(rowData.get(17).toString()));
             sampleCollectionDate.setPerson(patient);
             sampleCollectionDate.setConcept(conceptService.getConceptByUuid("159951AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-            sampleCollectionDate.setValueDate(convertToDate(rowData.get(17).toString()));
+            sampleCollectionDate.setValueDate(convertStringToDate.convert(rowData.get(17).toString()));
             LabTestsGroupObs.addGroupMember(sampleCollectionDate);
 
             Obs testContextStatusObs = new Obs();// sample collection dates
-            testContextStatusObs.setObsDatetime(convertToDate(rowData.get(17).toString()));
+            testContextStatusObs.setObsDatetime(convertStringToDate.convert(rowData.get(17).toString()));
             testContextStatusObs.setPerson(patient);
             testContextStatusObs.setConcept(conceptService.getConceptByUuid("162084AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             testContextStatusObs.setValueCoded(conceptService.getConceptByUuid("162080AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             LabTestsGroupObs.addGroupMember(testContextStatusObs);
 
             Obs resultsCollectionDate = new Obs();// results collection dates
-            resultsCollectionDate.setObsDatetime(convertToDate(rowData.get(18).toString()));
+            resultsCollectionDate.setObsDatetime(convertStringToDate.convert(rowData.get(18).toString()));
             resultsCollectionDate.setPerson(patient);
             resultsCollectionDate.setConcept(conceptService.getConceptByUuid("160082AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-            resultsCollectionDate.setValueDate(convertToDate(rowData.get(18).toString()));
+            resultsCollectionDate.setValueDate(convertStringToDate.convert(rowData.get(18).toString()));
             LabTestsGroupObs.addGroupMember(resultsCollectionDate);
 
             Obs resultsObs = new Obs();// results
-            resultsObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+            resultsObs.setObsDatetime(convertStringToDate.convert(rowData.get(18).toString()));
             resultsObs.setPerson(patient);
             resultsObs.setConcept(conceptService.getConceptByUuid("844AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             if (rowData.get(19).toString().equals("negative")) {
@@ -394,21 +395,6 @@ public class Moh408 {
         }
 
 
-    }
-
-    private Date convertToDate(String dateInString) throws ParseException {
-
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-
-        Date date = null;
-        if (dateInString != "") {
-            if (dateInString.contains("/")) {
-
-                date = formatter.parse(dateInString);
-            }
-
-        }
-        return date;
     }
 
     private List<List<Object>> readExcelSheet(String path) {

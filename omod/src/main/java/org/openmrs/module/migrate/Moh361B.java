@@ -1,13 +1,15 @@
 package org.openmrs.module.migrate;
 
-import org.openmrs.*;
+import org.openmrs.DrugOrder;
+import org.openmrs.Encounter;
+import org.openmrs.Obs;
+import org.openmrs.Patient;
 import org.openmrs.api.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.kenyaui.KenyaUiUtils;
 
 import javax.servlet.http.HttpSession;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +29,7 @@ public class Moh361B {
     ConceptService conceptService = Context.getConceptService();
     ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
     PatientService patientService = Context.getPatientService();
+    ConvertStringToDate convertStringToDate = new ConvertStringToDate();
     Patient patient = new Patient();
 
     public Moh361B(String path,HttpSession session, KenyaUiUtils kenyaUi){
@@ -59,11 +62,11 @@ public class Moh361B {
                 if (upn.isEmpty()){
                     patient = patientService.getPatient(patientListUsingAmrId.get(0).getPatientId());
                     savePatientObsAtArvStart(patient,rowData);
-                    saveDrugOrders(patient,rowData);
+//                    saveDrugOrders(patient,rowData);
                 }else {
                     patient = patientService.getPatient(patientListUsingUpn.get(0).getPatientId());
                     savePatientObsAtArvStart(patient,rowData);
-                    saveDrugOrders(patient,rowData);
+//                    saveDrugOrders(patient,rowData);
                 }
             }
         }
@@ -79,50 +82,56 @@ public class Moh361B {
 
             currentDrugOrder.setPatient(patient);
             currentDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
-            currentDrugOrder.setStartDate(convertToDate(rowData.get(1).toString()));
+            currentDrugOrder.setStartDate(convertStringToDate.convert(rowData.get(1).toString()));
             currentDrugOrder.setFrequency("");
             currentDrugOrder.setDose(300.0);
             currentDrugOrder.setUnits("mg");
 
-            setDrugsConcepts(currentDrugOrder, firstRegimen[i]);
-            Context.getOrderService().saveOrder(currentDrugOrder);
+            if (firstRegimen[i] != null) {
+                setDrugsConcepts(currentDrugOrder, firstRegimen[i]);
+                Context.getOrderService().saveOrder(currentDrugOrder);
+            }
 
         }
-        if (rowData.get(15).toString().matches(rowData.get(17).toString())){
+
+        if (rowData.get(17) != "") {
+            if (rowData.get(15).toString().matches(rowData.get(17).toString())) {
 //            List<DrugOrder>drugOrderList =  Context.getOrderService().getDrugOrdersByPatient(patient);
 //            for(DrugOrder drugOrder : drugOrderList){
 //                drugOrder.setDateChanged(convertToDate(rowData.get(16).toString()));
 //            }
 
-        }else{
+            } else {
 
-            List<DrugOrder>drugOrderList =  Context.getOrderService().getDrugOrdersByPatient(patient);
-            for(DrugOrder drugOrder : drugOrderList){
-                drugOrder.setDiscontinued(true);
-                drugOrder.setDiscontinuedDate(convertToDate(rowData.get(16).toString()));
-                drugOrder.setDiscontinuedReason(conceptService.getConceptByUuid("160561AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-            }
+                List<DrugOrder> drugOrderList = Context.getOrderService().getDrugOrdersByPatient(patient);
+                for (DrugOrder drugOrder : drugOrderList) {
+                    drugOrder.setDiscontinued(true);
+                    drugOrder.setDiscontinuedDate(convertStringToDate.convert(rowData.get(16).toString()));
+                    drugOrder.setDiscontinuedReason(conceptService.getConceptByUuid("160561AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                }
 
-            for (int i = 0; i < lastRegimen.length; i++) {
-                DrugOrder lastDrugOrder = new DrugOrder();
+                for (int i = 0; i < lastRegimen.length; i++) {
+                    DrugOrder lastDrugOrder = new DrugOrder();
 
-                lastDrugOrder.setPatient(patient);
-                lastDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
-                lastDrugOrder.setStartDate(convertToDate(rowData.get(16).toString()));
-                lastDrugOrder.setFrequency("");
-                lastDrugOrder.setDose(300.00);
-                lastDrugOrder.setUnits("mg");
+                    lastDrugOrder.setPatient(patient);
+                    lastDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
+                    lastDrugOrder.setStartDate(convertStringToDate.convert(rowData.get(16).toString()));
+                    lastDrugOrder.setFrequency("");
+                    lastDrugOrder.setDose(300.00);
+                    lastDrugOrder.setUnits("mg");
 
-                setDrugsConcepts(lastDrugOrder, lastRegimen[i]);
-                Context.getOrderService().saveOrder(lastDrugOrder);
+                    if (lastRegimen[i] != null) {
+                        setDrugsConcepts(lastDrugOrder, lastRegimen[i]);
+                        Context.getOrderService().saveOrder(lastDrugOrder);
+                    }
 
+                }
             }
         }
-
-
     }
 
     private void setDrugsConcepts(DrugOrder drugOrder, String regimen) {
+
 
         if (regimen.contains("LAMIVUDINE")){
 
@@ -196,7 +205,7 @@ public class Moh361B {
         getLocation(encounter, rowData);
         encounter.setDateCreated(new Date());
         encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        encounter.setEncounterDatetime(convertToDate(rowData.get(1).toString()));
+        encounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(1).toString()));
 
        /* Obs lastVisitToClinicObs = new Obs();//Last return to clinic obs
         lastVisitToClinicObs.setObsDatetime(convertToDate(rowData.get(22).toString()));
@@ -206,10 +215,10 @@ public class Moh361B {
         encounter.addObs(lastVisitToClinicObs);
 */
         Obs firstArvDateObs = new Obs();//first ARV dates
-        firstArvDateObs.setObsDatetime(convertToDate(rowData.get(1).toString()));
+        firstArvDateObs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
         firstArvDateObs.setPerson(patient);
         firstArvDateObs.setConcept(conceptService.getConceptByUuid("159599AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        firstArvDateObs.setValueDate(convertToDate(rowData.get(1).toString()));
+        firstArvDateObs.setValueDate(convertStringToDate.convert(rowData.get(1).toString()));
         encounter.addObs(firstArvDateObs);
 
         Obs whoStageObs = new Obs();//World Health Organization HIV stage
@@ -217,12 +226,12 @@ public class Moh361B {
         whoStageObs.setLocation(locationService.getDefaultLocation());
         whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String whoStageAnswer = rowData.get(9).toString();
-        whoStageObs.setObsDatetime(convertToDate(rowData.get(1).toString()));
+        whoStageObs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
         checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer);
         encounter.addObs(whoStageObs);
 
         Obs cd4CountObs = new Obs();//CD4 count Obs
-        cd4CountObs.setObsDatetime(convertToDate(rowData.get(1).toString()));
+        cd4CountObs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
         cd4CountObs.setPerson(patient);
         cd4CountObs.setConcept(conceptService.getConceptByUuid("5497AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         if (rowData.get(10).toString() != "") {
@@ -231,7 +240,7 @@ public class Moh361B {
         }
 
         Obs cd4PercentObs = new Obs();//CD4% Obs
-        cd4PercentObs.setObsDatetime(convertToDate(rowData.get(1).toString()));
+        cd4PercentObs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
         cd4PercentObs.setPerson(patient);
         cd4PercentObs.setConcept(conceptService.getConceptByUuid("730AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         if (rowData.get(11).toString() != "") {
@@ -240,7 +249,7 @@ public class Moh361B {
         }
 
         Obs heightObs = new Obs();//height Obs
-        heightObs.setObsDatetime(convertToDate(rowData.get(1).toString()));
+        heightObs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
         heightObs.setPerson(patient);
         heightObs.setConcept(conceptService.getConceptByUuid("5090AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         if (rowData.get(12).toString() != "") {
@@ -249,7 +258,7 @@ public class Moh361B {
         }
 
         Obs weightObs = new Obs();//weight Obs
-        weightObs.setObsDatetime(convertToDate(rowData.get(1).toString()));
+        weightObs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
         weightObs.setPerson(patient);
         weightObs.setConcept(conceptService.getConceptByUuid("5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         if (rowData.get(13).toString() != "") {
@@ -265,7 +274,7 @@ public class Moh361B {
         lastEncounter.setLocation(locationService.getDefaultLocation());
         lastEncounter.setDateCreated(new Date());
         lastEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        lastEncounter.setEncounterDatetime(convertToDate(rowData.get(22).toString()));
+        lastEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(22).toString()));
 
         if (rowData.get(22) != ""){
             encounterService.saveEncounter(lastEncounter);
@@ -308,21 +317,6 @@ public class Moh361B {
                 obs.setValueCoded(conceptService.getConceptByUuid("1067AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             }
         }
-    }
-
-    private Date convertToDate(String dateInString) throws ParseException {
-
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-
-        Date date = null;
-        if (dateInString != "") {
-            if (dateInString.contains("/")) {
-
-                date = formatter.parse(dateInString);
-            }
-
-        }
-        return date;
     }
 
     private void getLocation(Encounter encounter, List<Object> rowData) {

@@ -29,6 +29,7 @@ public class Moh361A {
     ProviderService providerService = Context.getProviderService();
     ConceptService conceptService = Context.getConceptService();
     ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
+    ConvertStringToDate convertStringToDate = new ConvertStringToDate();
     PatientService patientService = Context.getPatientService();
 
     //constructor
@@ -55,7 +56,7 @@ public class Moh361A {
             String[] fullNames;
             String fName = "", mName = "", lName = "";
             String gender = (String) rowData.get(9);
-            Date dob = convertToDate((String) rowData.get(7));
+            Date dob = convertStringToDate.convert((String) rowData.get(7));
             fullNames = String.valueOf(rowData.get(6)).replaceAll("\\s+", " ").split(" ");
 
             if (fullNames.length == 4) {
@@ -153,10 +154,10 @@ public class Moh361A {
             hivProgram.setPatient(patient);//enroll in HIV Program
             hivProgram.setProgram(workflowService.getProgramByUuid("dfdc6d40-2f2f-463d-ba90-cc97350441a8"));
             if (rowData.get(3) == ""){
-                hivProgram.setDateEnrolled(convertToDate(rowData.get(2).toString()));
+                hivProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(2).toString()));
             }
             else {
-                hivProgram.setDateEnrolled(convertToDate(rowData.get(3).toString()));
+                hivProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(3).toString()));
             }
             workflowService.savePatientProgram(hivProgram);
         }
@@ -179,15 +180,15 @@ public class Moh361A {
         enrollmentEncounter.setDateCreated(new Date());
         enrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         if (rowData.get(3) == "") {
-            enrollmentEncounter.setEncounterDatetime(convertToDate(rowData.get(2).toString()));
+            enrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(2).toString()));
         }
         else{
-            enrollmentEncounter.setEncounterDatetime(convertToDate(rowData.get(3).toString()));
+            enrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(3).toString()));
         }
 
         /*Patient Obs during enrollment*/
         Obs entryPointObs = new Obs();//entry point
-        entryPointObs.setObsDatetime(convertToDate(rowData.get(21).toString()));
+        entryPointObs.setObsDatetime(convertStringToDate.convert(rowData.get(21).toString()));
         entryPointObs.setPerson(patient);
         entryPointObs.setConcept(conceptService.getConceptByUuid("160540AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String entryPointAnswer = rowData.get(10).toString();
@@ -195,7 +196,7 @@ public class Moh361A {
         enrollmentEncounter.addObs(entryPointObs);
 
         Obs transferInObs = new Obs();//transfer in
-        transferInObs.setObsDatetime(convertToDate(rowData.get(21).toString()));
+        transferInObs.setObsDatetime(convertStringToDate.convert(rowData.get(21).toString()));
         transferInObs.setPerson(patient);
         transferInObs.setConcept(conceptService.getConceptByUuid("160563AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String isTransferAnswer = rowData.get(1).toString();
@@ -203,10 +204,10 @@ public class Moh361A {
         enrollmentEncounter.addObs(transferInObs);
 
         Obs dateConfirmedHivObs = new Obs();//Date confirmed HIV+
-        dateConfirmedHivObs.setObsDatetime(convertToDate(rowData.get(21).toString()));
+        dateConfirmedHivObs.setObsDatetime(convertStringToDate.convert(rowData.get(21).toString()));
         dateConfirmedHivObs.setPerson(patient);
         dateConfirmedHivObs.setConcept(conceptService.getConceptByUuid("160554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        dateConfirmedHivObs.setValueDate(convertToDate(rowData.get(11).toString()));
+        dateConfirmedHivObs.setValueDate(convertStringToDate.convert(rowData.get(11).toString()));
         enrollmentEncounter.addObs(dateConfirmedHivObs);
 
         encounterService.saveEncounter(enrollmentEncounter);//saving the enrollmentEncounter
@@ -221,17 +222,17 @@ public class Moh361A {
         consultationEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
 
         if (rowData.get(3) == "") {
-            consultationEncounter.setEncounterDatetime(convertToDate(rowData.get(2).toString()));
+            consultationEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(2).toString()));
         }
         else{
-            consultationEncounter.setEncounterDatetime(convertToDate(rowData.get(3).toString()));
+            consultationEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(3).toString()));
         }
 
         Obs dateArtStartedObs = new Obs();//date art started
-        dateArtStartedObs.setObsDatetime(convertToDate(rowData.get(20).toString()));
+        dateArtStartedObs.setObsDatetime(convertStringToDate.convert(rowData.get(20).toString()));
         dateArtStartedObs.setPerson(patient);
         dateArtStartedObs.setConcept(conceptService.getConceptByUuid("159599AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        dateArtStartedObs.setValueDate(convertToDate(rowData.get(20).toString()));
+        dateArtStartedObs.setValueDate(convertStringToDate.convert(rowData.get(20).toString()));
         consultationEncounter.addObs(dateArtStartedObs);
 
         Obs whoStageObs = new Obs();//World Health Organization HIV stage
@@ -241,7 +242,7 @@ public class Moh361A {
         String whoStageAnswer = rowData.get(17).toString();
         if(rowData.get(17) !=""){
             String[] whoStage = whoStageAnswer.split("\\n");
-            whoStageObs.setObsDatetime(convertToDate(whoStage[1]));
+            whoStageObs.setObsDatetime(convertStringToDate.convert(whoStage[1]));
         }
         checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
         consultationEncounter.addObs(whoStageObs);
@@ -256,13 +257,13 @@ public class Moh361A {
         getLocation(hivLastClinicalEncounter, rowData);
         hivLastClinicalEncounter.setDateCreated(new Date());
         hivLastClinicalEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        hivLastClinicalEncounter.setEncounterDatetime(convertToDate(rowData.get(21).toString()));
+        hivLastClinicalEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(21).toString()));
 
         Obs lastReturnToClinicObs = new Obs();//Last return to clinic obs
-        lastReturnToClinicObs.setObsDatetime(convertToDate(rowData.get(21).toString()));
+        lastReturnToClinicObs.setObsDatetime(convertStringToDate.convert(rowData.get(21).toString()));
         lastReturnToClinicObs.setPerson(patient);
         lastReturnToClinicObs.setConcept(conceptService.getConceptByUuid("5096AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        lastReturnToClinicObs.setValueDate(convertToDate(rowData.get(23).toString()));
+        lastReturnToClinicObs.setValueDate(convertStringToDate.convert(rowData.get(23).toString()));
         hivLastClinicalEncounter.addObs(lastReturnToClinicObs);
 
         encounterService.saveEncounter(hivLastClinicalEncounter);//saving hivLastClinicalEncounter
@@ -284,30 +285,30 @@ public class Moh361A {
         encounter.setDateCreated(new Date());
         encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         if (rowData.get(18) != "") {
-            encounter.setEncounterDatetime(convertToDate(rowData.get(18).toString()));
+            encounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(18).toString()));
         }
 
         Obs dateEligibleForArvObs = new Obs();//date eligible for ARVs
-        dateEligibleForArvObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+        dateEligibleForArvObs.setObsDatetime(convertStringToDate.convert(rowData.get(18).toString()));
         dateEligibleForArvObs.setPerson(patient);
         dateEligibleForArvObs.setConcept(conceptService.getConceptByUuid("162227AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        dateEligibleForArvObs.setValueDate(convertToDate(rowData.get(18).toString()));
+        dateEligibleForArvObs.setValueDate(convertStringToDate.convert(rowData.get(18).toString()));
         if (rowData.get(18) != "") {
             encounter.addObs(dateEligibleForArvObs);
         }
 
         Obs whoStageObs = new Obs();//WHO Stage Obs
-        whoStageObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+        whoStageObs.setObsDatetime(convertStringToDate.convert(rowData.get(18).toString()));
         whoStageObs.setPerson(patient);
         whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 
         Obs cd4PercentObs = new Obs();
-        cd4PercentObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+        cd4PercentObs.setObsDatetime(convertStringToDate.convert(rowData.get(18).toString()));
         cd4PercentObs.setPerson(patient);
         cd4PercentObs.setConcept(conceptService.getConceptByUuid("730AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 
         Obs cd4CountObs = new Obs();
-        cd4CountObs.setObsDatetime(convertToDate(rowData.get(18).toString()));
+        cd4CountObs.setObsDatetime(convertStringToDate.convert(rowData.get(18).toString()));
         cd4CountObs.setPerson(patient);
         cd4CountObs.setConcept(conceptService.getConceptByUuid("5497AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 
@@ -410,12 +411,12 @@ public class Moh361A {
         mch_csEnrollmentEncounter.setLocation(locationService.getDefaultLocation());
         mch_csEnrollmentEncounter.setDateCreated(new Date());
         mch_csEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        mch_csEnrollmentEncounter.setEncounterDatetime(convertToDate(rowData.get(18).toString()));
+        mch_csEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(18).toString()));
 
         PatientProgram mch_csProgram = new PatientProgram();
         mch_csProgram.setPatient(patient);
         mch_csProgram.setProgram(workflowService.getProgramByUuid("c2ecdf11-97cd-432a-a971-cfd9bd296b83"));
-        mch_csProgram.setDateEnrolled(convertToDate(rowData.get(18).toString()));
+        mch_csProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(18).toString()));
         workflowService.savePatientProgram(mch_csProgram);
     }
 
@@ -427,7 +428,7 @@ public class Moh361A {
             if (rowData.get(15) != ""){
                 String[] obsMade = isPregnant.split("\\n");
                 String[] firstObs = obsMade[0].trim().split("\\|");
-                Date edd = convertToDate(firstObs[0]);
+                Date edd = convertStringToDate.convert(firstObs[0]);
                 if (firstObs.length == 2) {
                     String referral = firstObs[1];
                 }
@@ -563,15 +564,15 @@ public class Moh361A {
         tbEnrollmentEncounter.setLocation(locationService.getDefaultLocation());
         tbEnrollmentEncounter.setDateCreated(new Date());
         tbEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        tbEnrollmentEncounter.setEncounterDatetime(convertToDate(dates1[0]));
+        tbEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(dates1[0]));
 
-        tbProgram.setDateEnrolled(convertToDate(dates1[0]));
+        tbProgram.setDateEnrolled(convertStringToDate.convert(dates1[0]));
         workflowService.savePatientProgram(tbProgram);
 
         Obs tbTreatmentObs = new Obs();
-        tbTreatmentObs.setObsDatetime(convertToDate(dates1[0]));
+        tbTreatmentObs.setObsDatetime(convertStringToDate.convert(dates1[0]));
         tbTreatmentObs.setConcept(conceptService.getConceptByUuid("1113AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        tbTreatmentObs.setValueDate(convertToDate(dates1[0]));
+        tbTreatmentObs.setValueDate(convertStringToDate.convert(dates1[0]));
 
         tbEnrollmentEncounter.addObs(tbTreatmentObs);
         encounterService.saveEncounter(tbEnrollmentEncounter);//saving tbEnrollmentEncounter
@@ -589,12 +590,12 @@ public class Moh361A {
                 tbTreatmentDiscontinuationEncounter.setDateCreated(new Date());
                 tbTreatmentDiscontinuationEncounter.setLocation(locationService.getDefaultLocation());
                 tbTreatmentDiscontinuationEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-                tbTreatmentDiscontinuationEncounter.setEncounterDatetime(convertToDate(stopDate));
+                tbTreatmentDiscontinuationEncounter.setEncounterDatetime(convertStringToDate.convert(stopDate));
 
                 Obs tbTreatmentDiscontinuationObs = new Obs();
-                tbTreatmentDiscontinuationObs.setObsDatetime(convertToDate(stopDate));
+                tbTreatmentDiscontinuationObs.setObsDatetime(convertStringToDate.convert(stopDate));
                 tbTreatmentDiscontinuationObs.setConcept(conceptService.getConceptByUuid("159431AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-                tbTreatmentDiscontinuationObs.setValueDate(convertToDate(stopDate));
+                tbTreatmentDiscontinuationObs.setValueDate(convertStringToDate.convert(stopDate));
 
                 tbTreatmentDiscontinuationEncounter.addObs(tbTreatmentDiscontinuationObs);
                 encounterService.saveEncounter(tbTreatmentDiscontinuationEncounter);
@@ -626,8 +627,8 @@ public class Moh361A {
 
                 if (startDate.contains("/")) {
 
-                    ctxEncounter.setEncounterDatetime(convertToDate(startDate));
-                    groupObs.setObsDatetime(convertToDate(startDate));
+                    ctxEncounter.setEncounterDatetime(convertStringToDate.convert(startDate));
+                    groupObs.setObsDatetime(convertStringToDate.convert(startDate));
 
                     if (dates.length == 2) {
                         String stopDate = dates[1];
@@ -717,10 +718,10 @@ public class Moh361A {
             obs.setValueCoded(conceptService.getConceptByUuid("1065AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 
             Obs transferInDateObs = new Obs();
-            transferInDateObs.setObsDatetime(convertToDate(rowData.get(2).toString()));
+            transferInDateObs.setObsDatetime(convertStringToDate.convert(rowData.get(2).toString()));
             transferInDateObs.setPerson(patient);
             transferInDateObs.setConcept(conceptService.getConceptByUuid("160534AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-            transferInDateObs.setValueDate(convertToDate(rowData.get(2).toString()));
+            transferInDateObs.setValueDate(convertStringToDate.convert(rowData.get(2).toString()));
 
             enrollmentEncounter.addObs(transferInDateObs);
         } else {
@@ -751,21 +752,5 @@ public class Moh361A {
         }
 
     }
-
-    private Date convertToDate(String dateInString) throws ParseException {
-
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-
-        Date date = null;
-        if (dateInString != "") {
-            if (dateInString.contains("/")) {
-
-                date = formatter.parse(dateInString);
-            }
-
-        }
-        return date;
-    }
-
 
 }
