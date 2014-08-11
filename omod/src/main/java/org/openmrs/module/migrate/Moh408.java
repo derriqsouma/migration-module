@@ -9,6 +9,7 @@ import org.openmrs.*;
 import org.openmrs.api.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.idgen.service.IdentifierSourceService;
+import org.openmrs.module.kenyaemr.api.KenyaEmrService;
 import org.openmrs.module.kenyaui.KenyaUiUtils;
 
 import javax.servlet.http.HttpSession;
@@ -37,6 +38,7 @@ public class Moh408 {
     ConvertStringToDate convertStringToDate = new ConvertStringToDate();
     PatientService patientService = Context.getPatientService();
     PersonService personService = Context.getPersonService();
+    Location defaultLocation = Context.getService(KenyaEmrService.class).getDefaultLocation();
 
     public Moh408(String path, HttpSession session, KenyaUiUtils kenyaUi) {
         this.path = path;
@@ -95,14 +97,14 @@ public class Moh408 {
                 String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "Migration");
                 openmrsId.setIdentifierType(openmrsIdType);
                 openmrsId.setDateCreated(new Date());
-                openmrsId.setLocation(locationService.getDefaultLocation());
+                openmrsId.setLocation(defaultLocation);
                 openmrsId.setIdentifier(generated);
                 openmrsId.setVoided(false);
 
                 PatientIdentifier amrId = new PatientIdentifier();
                 amrId.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("8d79403a-c2cc-11de-8d13-0010c6dffd0f"));
                 amrId.setDateCreated(new Date());
-                amrId.setLocation(locationService.getDefaultLocation());
+                amrId.setLocation(defaultLocation);
                 amrId.setIdentifier((String) rowData.get(2));
                 amrId.setVoided(false);
                 amrId.setPreferred(true);
@@ -171,7 +173,7 @@ public class Moh408 {
         encounter.setPatient(patient);
         encounter.setForm(formService.getFormByUuid("755b59e6-acbb-4853-abaf-be302039f902"));
         encounter.setEncounterType(encounterService.getEncounterTypeByUuid("bcc6da85-72f2-4291-b206-789b8186a021"));
-        encounter.setLocation(locationService.getDefaultLocation());
+        encounter.setLocation(defaultLocation);
 //        String location = rowData.get(13).toString();
 //        getLocation(encounter, location);
         encounter.setDateCreated(new Date());
@@ -373,7 +375,7 @@ public class Moh408 {
             encounter.setLocation(locationService.getLocation("GK Prisons Dispensary (Busia)"));
         }
         else{
-            encounter.setLocation(locationService.getDefaultLocation());
+            encounter.setLocation(defaultLocation);
         }
     }
 

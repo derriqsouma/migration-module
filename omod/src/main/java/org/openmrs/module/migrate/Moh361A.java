@@ -4,6 +4,7 @@ import org.openmrs.*;
 import org.openmrs.api.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.idgen.service.IdentifierSourceService;
+import org.openmrs.module.kenyaemr.api.KenyaEmrService;
 import org.openmrs.module.kenyaui.KenyaUiUtils;
 
 import javax.servlet.http.HttpSession;
@@ -31,6 +32,7 @@ public class Moh361A {
     ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
     ConvertStringToDate convertStringToDate = new ConvertStringToDate();
     PatientService patientService = Context.getPatientService();
+    Location defaultLocation = Context.getService(KenyaEmrService.class).getDefaultLocation();
 
     //constructor
     public Moh361A(String path, HttpSession session, KenyaUiUtils kenyaUi){
@@ -92,14 +94,14 @@ public class Moh361A {
                 String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "Migration");
                 openmrsId.setIdentifierType(openmrsIdType);
                 openmrsId.setDateCreated(new Date());
-                openmrsId.setLocation(locationService.getDefaultLocation());
+                openmrsId.setLocation(defaultLocation);
                 openmrsId.setIdentifier(generated);
                 openmrsId.setVoided(false);
 
                 PatientIdentifier amrId = new PatientIdentifier();
                 amrId.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("8d79403a-c2cc-11de-8d13-0010c6dffd0f"));
                 amrId.setDateCreated(new Date());
-                amrId.setLocation(locationService.getDefaultLocation());
+                amrId.setLocation(defaultLocation);
                 amrId.setIdentifier((String) rowData.get(5));
                 amrId.setVoided(false);
 
@@ -108,7 +110,7 @@ public class Moh361A {
                     upn = new PatientIdentifier();
                     upn.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("05ee9cf4-7242-4a17-b4d4-00f707265c8a"));
                     upn.setDateCreated(new Date());
-                    upn.setLocation(locationService.getDefaultLocation());
+                    upn.setLocation(defaultLocation);
                     upn.setIdentifier(rowData.get(4).toString().replaceAll("[^\\d]", ""));
                     upn.setVoided(false);
                     upn.setPreferred(true);
@@ -176,7 +178,7 @@ public class Moh361A {
         enrollmentEncounter.setPatient(patient);
         enrollmentEncounter.setForm(formService.getFormByUuid("e4b506c1-7379-42b6-a374-284469cba8da"));
         enrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("de78a6be-bfc5-4634-adc3-5f1a280455cc"));
-        enrollmentEncounter.setLocation(locationService.getDefaultLocation());
+        enrollmentEncounter.setLocation(defaultLocation);
         enrollmentEncounter.setDateCreated(new Date());
         enrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         if (rowData.get(3) == "") {
@@ -237,7 +239,7 @@ public class Moh361A {
 
         Obs whoStageObs = new Obs();//World Health Organization HIV stage
         whoStageObs.setPerson(patient);
-        whoStageObs.setLocation(locationService.getDefaultLocation());
+        whoStageObs.setLocation(defaultLocation);
         whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String whoStageAnswer = rowData.get(17).toString();
         if(rowData.get(17) !=""){
@@ -408,7 +410,7 @@ public class Moh361A {
         mch_csEnrollmentEncounter.setPatient(patient);
         mch_csEnrollmentEncounter.setForm(formService.getFormByUuid("8553d869-bdc8-4287-8505-910c7c998aff"));
         mch_csEnrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("415f5136-ca4a-49a8-8db3-f994187c3af6"));
-        mch_csEnrollmentEncounter.setLocation(locationService.getDefaultLocation());
+        mch_csEnrollmentEncounter.setLocation(defaultLocation);
         mch_csEnrollmentEncounter.setDateCreated(new Date());
         mch_csEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         mch_csEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(18).toString()));
@@ -436,7 +438,7 @@ public class Moh361A {
                 encounter.setPatient(patient);
                 encounter.setForm(formService.getFormByUuid("23b4ebbd-29ad-455e-be0e-04aa6bc30798"));
                 encounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
-                encounter.setLocation(locationService.getDefaultLocation());
+                encounter.setLocation(defaultLocation);
                 encounter.setDateCreated(new Date());
                 encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
                 encounter.setEncounterDatetime(edd);
@@ -535,7 +537,7 @@ public class Moh361A {
         }else if (location.contains("BOKOLI")){
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Bokoli Hospital"));
         }else{
-            hivLastClinicalEncounter.setLocation(locationService.getDefaultLocation());
+            hivLastClinicalEncounter.setLocation(defaultLocation);
         }
     }
 
@@ -561,7 +563,7 @@ public class Moh361A {
         tbEnrollmentEncounter.setPatient(patient);
         tbEnrollmentEncounter.setForm(formService.getFormByUuid("89994550-9939-40f3-afa6-173bce445c79"));
         tbEnrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("9d8498a4-372d-4dc4-a809-513a2434621e"));
-        tbEnrollmentEncounter.setLocation(locationService.getDefaultLocation());
+        tbEnrollmentEncounter.setLocation(defaultLocation);
         tbEnrollmentEncounter.setDateCreated(new Date());
         tbEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         tbEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(dates1[0]));
@@ -588,7 +590,7 @@ public class Moh361A {
                 tbTreatmentDiscontinuationEncounter.setForm(formService.getFormByUuid("4b296dd0-f6be-4007-9eb8-d0fd4e94fb3a"));
                 tbTreatmentDiscontinuationEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("d3e3d723-7458-4b4e-8998-408e8a551a84"));
                 tbTreatmentDiscontinuationEncounter.setDateCreated(new Date());
-                tbTreatmentDiscontinuationEncounter.setLocation(locationService.getDefaultLocation());
+                tbTreatmentDiscontinuationEncounter.setLocation(defaultLocation);
                 tbTreatmentDiscontinuationEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
                 tbTreatmentDiscontinuationEncounter.setEncounterDatetime(convertStringToDate.convert(stopDate));
 
@@ -613,7 +615,7 @@ public class Moh361A {
             ctxEncounter.setPatient(patient);
             ctxEncounter.setForm(formService.getFormByUuid("23b4ebbd-29ad-455e-be0e-04aa6bc30798"));
             ctxEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
-            ctxEncounter.setLocation(locationService.getDefaultLocation());
+            ctxEncounter.setLocation(defaultLocation);
             ctxEncounter.setDateCreated(new Date());
             ctxEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
 

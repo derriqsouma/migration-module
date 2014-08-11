@@ -135,7 +135,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.openmrs.module:metadatasharing-api-1.7:1.1.8" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.openmrs.module:metadatasharing-api-1.9:1.1.8" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.openmrs.module:calculation-api:1.1" level="project" />
-    <orderEntry type="module" module-name="kenyaemr-api" scope="PROVIDED" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.openmrs.module:kenyaemr-api:14.2-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: joda-time:joda-time:2.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.openmrs.module:reporting-api:0.8.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.quartz-scheduler:quartz:2.1.1" level="project" />

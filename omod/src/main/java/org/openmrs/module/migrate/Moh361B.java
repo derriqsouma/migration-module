@@ -1,11 +1,9 @@
 package org.openmrs.module.migrate;
 
-import org.openmrs.DrugOrder;
-import org.openmrs.Encounter;
-import org.openmrs.Obs;
-import org.openmrs.Patient;
+import org.openmrs.*;
 import org.openmrs.api.*;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.kenyaemr.api.KenyaEmrService;
 import org.openmrs.module.kenyaui.KenyaUiUtils;
 
 import javax.servlet.http.HttpSession;
@@ -31,6 +29,7 @@ public class Moh361B {
     PatientService patientService = Context.getPatientService();
     ConvertStringToDate convertStringToDate = new ConvertStringToDate();
     Patient patient = new Patient();
+    Location defaultLocation = Context.getService(KenyaEmrService.class).getDefaultLocation();
 
     public Moh361B(String path,HttpSession session, KenyaUiUtils kenyaUi){
         this.path = path;
@@ -223,7 +222,7 @@ public class Moh361B {
 
         Obs whoStageObs = new Obs();//World Health Organization HIV stage
         whoStageObs.setPerson(patient);
-        whoStageObs.setLocation(locationService.getDefaultLocation());
+        whoStageObs.setLocation(defaultLocation);
         whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String whoStageAnswer = rowData.get(9).toString();
         whoStageObs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
@@ -271,7 +270,7 @@ public class Moh361B {
         Encounter lastEncounter = new Encounter();
         lastEncounter.setPatient(patient);
         lastEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
-        lastEncounter.setLocation(locationService.getDefaultLocation());
+        lastEncounter.setLocation(defaultLocation);
         lastEncounter.setDateCreated(new Date());
         lastEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         lastEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(22).toString()));
@@ -415,7 +414,7 @@ public class Moh361B {
             encounter.setLocation(locationService.getLocation("GK Prisons Dispensary (Busia)"));
         }
         else{
-            encounter.setLocation(locationService.getDefaultLocation());
+            encounter.setLocation(defaultLocation);
         }
     }
 
