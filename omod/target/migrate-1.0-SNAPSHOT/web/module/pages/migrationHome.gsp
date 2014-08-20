@@ -20,6 +20,7 @@
             <li><a href="#tabs-1">MOH_361A</a></li>
             <li><a href="#tabs-2">MOH_361B</a></li>
             <li><a href="#tabs-3">MOH_408</a></li>
+            <li><a href="#tabs-4">fragment</a></li>
         </ul>
         <div id="tabs-1">
 
@@ -53,11 +54,13 @@
             </form>
 
         </div>
+
+        <div id="tabs-4">
+            ${ ui.includeFragment("migrate", "moh361B") }
+        </div>
     </div>
 </div>
-
 <script>
-
     jQuery(function() {
         var index = 'key';
         var dataStore = window.sessionStorage;

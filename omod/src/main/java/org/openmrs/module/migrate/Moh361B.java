@@ -61,11 +61,11 @@ public class Moh361B {
                 if (upn.isEmpty()){
                     patient = patientService.getPatient(patientListUsingAmrId.get(0).getPatientId());
                     savePatientObsAtArvStart(patient,rowData);
-//                    saveDrugOrders(patient,rowData);
+                    saveDrugOrders(patient,rowData);
                 }else {
                     patient = patientService.getPatient(patientListUsingUpn.get(0).getPatientId());
                     savePatientObsAtArvStart(patient,rowData);
-//                    saveDrugOrders(patient,rowData);
+                    saveDrugOrders(patient,rowData);
                 }
             }
         }
