@@ -4,7 +4,7 @@
     <br/><br/>
 
     <div class="ke-form-footer">
-        <input type="submit" name="submit" value="submit">
+        <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
     </div>
 </form>
-${file}
+
