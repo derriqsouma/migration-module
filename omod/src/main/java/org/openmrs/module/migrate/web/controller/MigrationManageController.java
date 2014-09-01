@@ -25,13 +25,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * The main controller.
  */
 @Controller
-public class  MigrationManageController {
+public class MigrationManageController {
 
-	protected final Log log = LogFactory.getLog(getClass());
+    protected final Log log = LogFactory.getLog(getClass());
 
-	@RequestMapping(value = "/module/migrate/manage", method = RequestMethod.GET)
-	public void manage(ModelMap model) {
-		model.addAttribute("user", Context.getAuthenticatedUser());
-	}
+    @RequestMapping(value = "/module/migrate/manage", method = RequestMethod.GET)
+    public void manage(ModelMap model) {
+        model.addAttribute("user", Context.getAuthenticatedUser());
+    }
 
 }

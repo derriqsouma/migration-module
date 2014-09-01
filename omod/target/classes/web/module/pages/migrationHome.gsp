@@ -20,7 +20,7 @@
             <li><a href="#tabs-1">MOH_361A</a></li>
             <li><a href="#tabs-2">MOH_361B</a></li>
             <li><a href="#tabs-3">MOH_408</a></li>
-            <li><a href="#tabs-4">fragment</a></li>
+            <li><a href="#tabs-4">Enroll Into Hiv Program</a></li>
         </ul>
         <div id="tabs-1">
 
@@ -56,7 +56,7 @@
         </div>
 
         <div id="tabs-4">
-            ${ ui.includeFragment("migrate", "moh361B") }
+            ${ ui.includeFragment("migrate", "enrollIntoHivProgram") }
         </div>
     </div>
 </div>

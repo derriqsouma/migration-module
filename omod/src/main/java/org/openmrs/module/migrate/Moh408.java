@@ -54,7 +54,7 @@ public class Moh408 {
     }
 
     private void saveInfantInfo(List<List<Object>> sheetData) throws ParseException {
-        int counter =0;
+        int counter = 0;
         for (int i = 0; i < sheetData.size(); i++) {
             List<Object> rowData = sheetData.get(i);
 
@@ -112,7 +112,7 @@ public class Moh408 {
                 patient.addIdentifiers(Arrays.asList(openmrsId, amrId));
                 if (!patientService.isIdentifierInUseByAnotherPatient(amrId)) {
                     patientService.savePatient(patient);//saving the patient
-                    enrollInToMch_csProgram(rowData,patient);
+                    enrollInToMch_csProgram(rowData, patient);
                     counter += 1;
 
                 } else {
@@ -133,7 +133,7 @@ public class Moh408 {
         mch_csProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(1).toString()));
         workflowService.savePatientProgram(mch_csProgram);
 
-        addRelationship(rowData,patient);
+        addRelationship(rowData, patient);
 
         Encounter mch_csEnrollmentEncounter = new Encounter();
         mch_csEnrollmentEncounter.setPatient(patient);
@@ -152,7 +152,7 @@ public class Moh408 {
         obs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
         obs.setPerson(patient);
         obs.setConcept(conceptService.getConceptByUuid("5303AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        if (rowData.get(56) !=""){
+        if (rowData.get(56) != "") {
             if (rowData.get(56).toString().contains("negative")) {
                 obs.setValueCoded(conceptService.getConceptByUuid("1066AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             } else {
@@ -180,7 +180,7 @@ public class Moh408 {
         encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         encounter.setEncounterDatetime(new Date());
 
-        if (rowData.get(14) !="") {
+        if (rowData.get(14) != "") {
             Obs LabTestsGroupObs = new Obs();/* Group Obs*/
             LabTestsGroupObs.setConcept(conceptService.getConceptByUuid("162085AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             LabTestsGroupObs.setPerson(patient);
@@ -212,7 +212,7 @@ public class Moh408 {
             resultsObs.setConcept(conceptService.getConceptByUuid("844AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             if (rowData.get(19).toString().equals("negative")) {
                 resultsObs.setValueCoded(conceptService.getConceptByUuid("1302AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-            }else{
+            } else {
                 resultsObs.setValueCoded(conceptService.getConceptByUuid("1301AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             }
             LabTestsGroupObs.addGroupMember(resultsObs);
@@ -224,7 +224,7 @@ public class Moh408 {
         infantFeedingObs.setObsDatetime(new Date());
         infantFeedingObs.setPerson(patient);
         infantFeedingObs.setConcept(conceptService.getConceptByUuid("1151AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        checkForValueCodedForInfantFeedingMethod(infantFeedingObs,rowData);
+        checkForValueCodedForInfantFeedingMethod(infantFeedingObs, rowData);
         encounter.addObs(infantFeedingObs);
 
         Obs npvMedicationObs = new Obs();// NPV Medication
@@ -268,7 +268,7 @@ public class Moh408 {
         Patient patient1 = new Patient();
         List<Patient> patientList = patientService.getPatients(name, null, null, true);
 
-        if (patientList.size() > 0){
+        if (patientList.size() > 0) {
             Relationship relationship = new Relationship();
             patient1 = patientService.getPatient(patientList.get(0).getPatientId());
 
@@ -283,98 +283,97 @@ public class Moh408 {
 
     private void getLocation(Encounter encounter, String location) {
 
-        if (location.contains("AMASE DISP")){
+        if (location.contains("AMASE DISP")) {
             encounter.setLocation(locationService.getLocation("Amase Dispensary"));
-        }else if (location.contains("LUKOLIS DISP")){
+        } else if (location.contains("LUKOLIS DISP")) {
             encounter.setLocation(locationService.getLocation("Lukolis Model Health Centre"));
-        }else if (location.contains("OBEKAI DIS")){
+        } else if (location.contains("OBEKAI DIS")) {
             encounter.setLocation(locationService.getLocation("Obekai Dispensary"));
-        }else if (location.contains("BUSIA DH")){
+        } else if (location.contains("BUSIA DH")) {
             encounter.setLocation(locationService.getLocation("Busia District Hospital"));
-        }else if (location.contains("NAMBALE HC")){
+        } else if (location.contains("NAMBALE HC")) {
             encounter.setLocation(locationService.getLocation("Nambale Health Centre"));
-        }else if (location.contains("AMUKURA HC")){
+        } else if (location.contains("AMUKURA HC")) {
             encounter.setLocation(locationService.getLocation("Amukura Health Centre"));
-        }else if (location.contains("TESO DH")){
+        } else if (location.contains("TESO DH")) {
             encounter.setLocation(locationService.getLocation("Teso District Hospital"));
-        }else if (location.contains("MTRH")){
+        } else if (location.contains("MTRH")) {
             encounter.setLocation(locationService.getLocation("Moi Teaching Refferal Hospital"));
-        }else if (location.contains("Kaptama (Friends) dispensary")){
+        } else if (location.contains("Kaptama (Friends) dispensary")) {
             encounter.setLocation(locationService.getLocation("Kaptama (Friends) Health Centre"));
-        }else if (location.contains("CHULAIMBO SDH")){
+        } else if (location.contains("CHULAIMBO SDH")) {
             encounter.setLocation(locationService.getLocation("Chulaimbo Sub-District Hospital"));
-        }else if (location.contains("Malaba")){
+        } else if (location.contains("Malaba")) {
             encounter.setLocation(locationService.getLocation("Malaba Dispensary"));
-        }else if (location.contains("NAITIRI SDH")){
+        } else if (location.contains("NAITIRI SDH")) {
             encounter.setLocation(locationService.getLocation("Naitiri Sub-District Hospital"));
-        }else if (location.contains("LUPIDA HC")){
+        } else if (location.contains("LUPIDA HC")) {
             encounter.setLocation(locationService.getLocation("Lupida Health Centre"));
-        }else if (location.contains("BUMALA A HC")){
+        } else if (location.contains("BUMALA A HC")) {
             encounter.setLocation(locationService.getLocation("Bumala A Health Centre"));
-        }else if (location.contains("BUMALA B HC")){
+        } else if (location.contains("BUMALA B HC")) {
             encounter.setLocation(locationService.getLocation("Bumala B Health Centre"));
-        }else if (location.contains("MUKHOBOLA HC")){
+        } else if (location.contains("MUKHOBOLA HC")) {
             encounter.setLocation(locationService.getLocation("Mukhobola Health Centre"));
-        }else if (location.contains("Uasin Gishu District Hospital")){
+        } else if (location.contains("Uasin Gishu District Hospital")) {
             encounter.setLocation(locationService.getLocation("Uasin Gishu District Hospital"));
-        }else if (location.contains("ITEN DH")){
+        } else if (location.contains("ITEN DH")) {
             encounter.setLocation(locationService.getLocation("Iten District Hospital"));
-        }else if (location.contains("BURNT FOREST SDH")){
+        } else if (location.contains("BURNT FOREST SDH")) {
             encounter.setLocation(locationService.getLocation("Burnt Forest Rhdc (Eldoret East)"));
-        }else if (location.contains("KITALE DH")){
+        } else if (location.contains("KITALE DH")) {
             encounter.setLocation(locationService.getLocation("Kitale District Hospital"));
-        }else if (location.contains("ANGURAI HC")){
+        } else if (location.contains("ANGURAI HC")) {
             encounter.setLocation(locationService.getLocation("Angurai Health Centre"));
-        }else if (location.contains("PORT VICTORIA HOS")){
+        } else if (location.contains("PORT VICTORIA HOS")) {
             encounter.setLocation(locationService.getLocation("Port Victoria Hospital"));
-        }else if (location.contains("Mois Bridge")){
+        } else if (location.contains("Mois Bridge")) {
             encounter.setLocation(locationService.getLocation("Moi's Bridge Health Centre"));
-        }else if (location.contains("MOSORIOT HC")){
+        } else if (location.contains("MOSORIOT HC")) {
             encounter.setLocation(locationService.getLocation("Mosoriot Clinic"));
-        }else if (location.contains("TURBO HC")){
+        } else if (location.contains("TURBO HC")) {
             encounter.setLocation(locationService.getLocation("Turbo Health Centre"));
-        }else if (location.contains("MADENDE HC")){
+        } else if (location.contains("MADENDE HC")) {
             encounter.setLocation(locationService.getLocation("Madende Dispensary"));
-        }else if (location.contains("MAKUTANO DISP")){
+        } else if (location.contains("MAKUTANO DISP")) {
             encounter.setLocation(locationService.getLocation("Makutano Dispensary"));
-        }else if (location.contains("KAPENGURIA DH")){
+        } else if (location.contains("KAPENGURIA DH")) {
             encounter.setLocation(locationService.getLocation("Kapenguria District Hospital"));
-        }else if (location.contains("WEBUYE DH")){
+        } else if (location.contains("WEBUYE DH")) {
             encounter.setLocation(locationService.getLocation("Webuye Health Centre"));
-        }else if (location.contains("Osieko")){
+        } else if (location.contains("Osieko")) {
             encounter.setLocation(locationService.getLocation("Osieko Dispensary"));
-        }else if (location.contains("Moi University")){
+        } else if (location.contains("Moi University")) {
             encounter.setLocation(locationService.getLocation("Moi University Health Centre"));
-        }else if (location.contains("Milo")){
+        } else if (location.contains("Milo")) {
             encounter.setLocation(locationService.getLocation("Milo Health Centre"));
-        }else if (location.contains("SIO PORT HOSP")){
+        } else if (location.contains("SIO PORT HOSP")) {
             encounter.setLocation(locationService.getLocation("Sio Port District Hospital"));
-        }else if (location.contains("HURUMA DH")){
+        } else if (location.contains("HURUMA DH")) {
             encounter.setLocation(locationService.getLocation("Huruma District Hospital"));
-        }else if (location.contains("BOKOLI SDH")){
+        } else if (location.contains("BOKOLI SDH")) {
             encounter.setLocation(locationService.getLocation("Bokoli Hospital"));
-        }else if (location.contains("MAUTUMA SDH")){
+        } else if (location.contains("MAUTUMA SDH")) {
             encounter.setLocation(locationService.getLocation("Mautuma Sub-District Hospital"));
-        }else if (location.contains("MT. ELGON DH")){
+        } else if (location.contains("MT. ELGON DH")) {
             encounter.setLocation(locationService.getLocation("Mt Elgon District Hospital"));
-        }else if (location.contains("CHEPTAIS SDH")){
+        } else if (location.contains("CHEPTAIS SDH")) {
             encounter.setLocation(locationService.getLocation("Cheptais Sub District Hospital"));
-        }else if (location.contains("ZIWA SDH")){
+        } else if (location.contains("ZIWA SDH")) {
             encounter.setLocation(locationService.getLocation("Ziwa Sub-District Hospital"));
-        }else if (location.contains("UASIN GISHU DH")){
+        } else if (location.contains("UASIN GISHU DH")) {
             encounter.setLocation(locationService.getLocation("Uasin Gishu District Hospital"));
-        }else if (location.contains("CHANGARA DISP")){
+        } else if (location.contains("CHANGARA DISP")) {
             encounter.setLocation(locationService.getLocation("Changara (GOK) Dispensary"));
-        }else if (location.contains("TENGES HC")){
+        } else if (location.contains("TENGES HC")) {
             encounter.setLocation(locationService.getLocation("Tenges Health Centre"));
-        }else if (location.contains("KHUNYANGU DH")){
+        } else if (location.contains("KHUNYANGU DH")) {
             encounter.setLocation(locationService.getLocation("Khunyangu Sub-District Hospital"));
-        }else if (location.contains("KABARNET DH")){
+        } else if (location.contains("KABARNET DH")) {
             encounter.setLocation(locationService.getLocation("Kabarnet District Hospital"));
-        }else if (location.contains("GK PRISONS DISP BUSIA")){
+        } else if (location.contains("GK PRISONS DISP BUSIA")) {
             encounter.setLocation(locationService.getLocation("GK Prisons Dispensary (Busia)"));
-        }
-        else{
+        } else {
             encounter.setLocation(defaultLocation);
         }
     }
@@ -391,7 +390,7 @@ public class Moh408 {
         } else if (entryPointAnswer.startsWith("MATERNAL CHILD HEALTH")) {
 
             obs.setValueCoded(conceptService.getConceptByUuid("160538AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        }else {
+        } else {
 
             obs.setValueCoded(conceptService.getConceptByUuid("5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         }

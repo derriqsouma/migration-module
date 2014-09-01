@@ -21,32 +21,32 @@ import java.util.Map;
 
 /**
  * This class defines the links that will appear on the administration page under the
- * "migrate.title" heading. 
+ * "migrate.title" heading.
  */
 public class AdminList extends AdministrationSectionExt {
-	
-	/**
-	 * @see AdministrationSectionExt#getMediaType()
-	 */
-	public Extension.MEDIA_TYPE getMediaType() {
-		return Extension.MEDIA_TYPE.html;
-	}
-	
-	/**
-	 * @see AdministrationSectionExt#getTitle()
-	 */
-	public String getTitle() {
-		return "migrate.title";
-	}
-	
-	/**
-	 * @see AdministrationSectionExt#getLinks()
-	 */
-	public Map<String, String> getLinks() {
-		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-		map.put("/module/migrate/manage.form", "migrate.manage");
+
+    /**
+     * @see AdministrationSectionExt#getMediaType()
+     */
+    public Extension.MEDIA_TYPE getMediaType() {
+        return Extension.MEDIA_TYPE.html;
+    }
+
+    /**
+     * @see AdministrationSectionExt#getTitle()
+     */
+    public String getTitle() {
+        return "migrate.title";
+    }
+
+    /**
+     * @see AdministrationSectionExt#getLinks()
+     */
+    public Map<String, String> getLinks() {
+        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        map.put("/module/migrate/manage.form", "migrate.manage");
         map.put("/module/migrate/migrateData.form", "migrate.migrateData");
-		return map;
-	}
-	
+        return map;
+    }
+
 }

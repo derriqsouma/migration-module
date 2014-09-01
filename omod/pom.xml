@@ -98,6 +98,16 @@
 
         <dependency>
             <groupId>org.openmrs.module</groupId>
+            <artifactId>calculation-omod</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>calculation-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
             <artifactId>metadatadeploy-api</artifactId>
         </dependency>
 

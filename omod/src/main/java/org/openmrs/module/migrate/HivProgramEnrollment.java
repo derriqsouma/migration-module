@@ -1,43 +1,62 @@
 package org.openmrs.module.migrate;
 
-import org.openmrs.Patient;
-import org.openmrs.PatientIdentifier;
-import org.openmrs.PatientIdentifierType;
+import org.openmrs.*;
 import org.openmrs.api.APIException;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.kenyacore.calculation.Filters;
 import org.openmrs.module.kenyacore.chore.AbstractChore;
+import org.openmrs.module.kenyaemr.api.KenyaEmrService;
 import org.openmrs.module.kenyaemr.metadata.HivMetadata;
 import org.openmrs.module.metadatadeploy.MetadataUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Created by derric on 8/15/14.
+ * Created by derric on 8/25/14.
  */
-@Component("migrate.HivProgramEnrollment")
-public class HivProgramEnrollment extends AbstractChore {
-    ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
+
+
+public class HivProgramEnrollment {
     PatientService patientService = Context.getPatientService();
+    Location defaultLocation = Context.getService(KenyaEmrService.class).getDefaultLocation();
+    ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
 
-    @Override
-    public void perform(PrintWriter output) throws APIException {
+
+    public HivProgramEnrollment() {
+
+    }
+
+    public void init() {
         PatientIdentifierType upnIdType = MetadataUtils.existing(PatientIdentifierType.class, HivMetadata._PatientIdentifierType.UNIQUE_PATIENT_NUMBER);
+        Program hivProgram = MetadataUtils.existing(Program.class, HivMetadata._Program.HIV);
         List<Patient> allPatients = patientService.getAllPatients();
-        Map<Patient, PatientIdentifier> patientsWithUpn = new HashMap<Patient, PatientIdentifier>();
-
+        PatientProgram patientProgram = new PatientProgram();
         for (Patient patient : allPatients) {
             PatientIdentifier upnID = patient.getPatientIdentifier(upnIdType);
+
             if (upnID != null) {
-                patientsWithUpn.put(patient, patient.getPatientIdentifier(upnIdType));
+                List<PatientProgram> patientPrograms = new ArrayList<PatientProgram>((workflowService.getPatientPrograms(patient, hivProgram, null, null, null, null, true)));
+                if(patientPrograms.isEmpty()){
+                    //enroll into hiv
+
+                    patientProgram.setPatient(patient);//enroll in HIV Program
+                    patientProgram.setProgram(workflowService.getProgramByUuid("dfdc6d40-2f2f-463d-ba90-cc97350441a8"));
+
+                    patientProgram.setDateEnrolled(new Date());
+
+                    workflowService.savePatientProgram(patientProgram);
+
+                }
+
             }
         }
-
-        System.out.println("\n\n*****\n\n"+patientsWithUpn.size()+"\n\n*****\n\n");
     }
+
 }

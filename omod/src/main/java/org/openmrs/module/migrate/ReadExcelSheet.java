@@ -25,7 +25,7 @@ public class ReadExcelSheet {
     KenyaUiUtils kenyaUi;
     String path;
 
-    public ReadExcelSheet(String path, HttpSession session, KenyaUiUtils kenyaUi){
+    public ReadExcelSheet(String path, HttpSession session, KenyaUiUtils kenyaUi) {
         this.session = session;
         this.kenyaUi = kenyaUi;
         this.path = path;
@@ -83,9 +83,7 @@ public class ReadExcelSheet {
             }
             file.close();
 
-        }
-
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             kenyaUi.notifyError(session, "No such file or directory");
         } catch (IOException e) {

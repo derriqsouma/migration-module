@@ -10,7 +10,7 @@ import java.util.Date;
 public class ConvertStringToDate {
 
     /*constructor*/
-    public ConvertStringToDate(){
+    public ConvertStringToDate() {
     }
 
     public Date convert(String dateInString) throws ParseException {

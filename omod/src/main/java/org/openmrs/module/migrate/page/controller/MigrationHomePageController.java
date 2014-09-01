@@ -34,21 +34,21 @@ public class MigrationHomePageController {
             String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + moh361Afile;
             model.addAttribute("file", moh361Afile);
 
-            Moh361A moh361A = new Moh361A(path,session,kenyaUi);
+            Moh361A moh361A = new Moh361A(path, session, kenyaUi);
             moh361A.initMoh361A();
         }
 
-        if (moh361Bfile !="") {
+        if (moh361Bfile != "") {
             String path = "/home/derric/Desktop/ampath_data/MOH_361B/" + moh361Bfile;
 
-            Moh361B moh361B = new Moh361B(path,session,kenyaUi);
+            Moh361B moh361B = new Moh361B(path, session, kenyaUi);
             moh361B.initMoh361B();
 
         }
 
-        if (moh408file !="") {
+        if (moh408file != "") {
             String path = "/home/derric/Desktop/ampath_data/MOH_408/" + moh408file;
-            Moh408 moh408 = new Moh408(path,session,kenyaUi);
+            Moh408 moh408 = new Moh408(path, session, kenyaUi);
             moh408.initMoh408();
         }
 

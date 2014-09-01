@@ -29,21 +29,20 @@ public class MigrateDataController {
     }
 
     @RequestMapping(value = "/module/migrate/migrateData", method = RequestMethod.POST)
-    public void submitInput(ModelMap model,@RequestParam(value = "file", required = true) String file) {
+    public void submitInput(ModelMap model, @RequestParam(value = "file", required = true) String file) {
         if (file != null) {
             String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + file;
 
-           model.addAttribute("thefile", file);
+            model.addAttribute("thefile", file);
 
             readExcelSheet(path);
-        }
-        else {
+        } else {
             String error = "NO FILE HAS BEEN SELECTED";
-            model.addAttribute("error",error);
+            model.addAttribute("error", error);
         }
     }
 
-    public static void readExcelSheet(String path){
+    public static void readExcelSheet(String path) {
 
         try {
 
@@ -61,10 +60,10 @@ public class MigrateDataController {
                 Row row = rowIterator.next();
 
                 //For each row, iterate through each columns
-                Iterator<org.apache.poi.ss.usermodel.Cell> cellIterator =row.cellIterator();
-                while (cellIterator.hasNext()){
+                Iterator<org.apache.poi.ss.usermodel.Cell> cellIterator = row.cellIterator();
+                while (cellIterator.hasNext()) {
                     Cell cell = cellIterator.next();
-                    switch (cell.getCellType()){
+                    switch (cell.getCellType()) {
                         case Cell.CELL_TYPE_BOOLEAN:
                             System.out.print(cell.getBooleanCellValue() + "\t");
 

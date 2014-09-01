@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class Moh361A {
     String path;
-    int counter=0;
+    int counter = 0;
     HttpSession session;
     KenyaUiUtils kenyaUi;
     ObsService obsService = Context.getObsService();
@@ -35,7 +35,7 @@ public class Moh361A {
     Location defaultLocation = Context.getService(KenyaEmrService.class).getDefaultLocation();
 
     //constructor
-    public Moh361A(String path, HttpSession session, KenyaUiUtils kenyaUi){
+    public Moh361A(String path, HttpSession session, KenyaUiUtils kenyaUi) {
         this.path = path;
         this.session = session;
         this.kenyaUi = kenyaUi;
@@ -44,7 +44,7 @@ public class Moh361A {
     public void initMoh361A() throws Exception {
         List<List<Object>> sheetData = new ArrayList();
 
-        ReadExcelSheet readExcelSheet = new ReadExcelSheet(path,session,kenyaUi);
+        ReadExcelSheet readExcelSheet = new ReadExcelSheet(path, session, kenyaUi);
         sheetData = readExcelSheet.readExcelSheet();
 
         savePatientInfo(sheetData);
@@ -91,7 +91,7 @@ public class Moh361A {
                 PatientIdentifier openmrsId = new PatientIdentifier();
                 //generating open mrs id
                 PatientIdentifierType openmrsIdType = patientService.getPatientIdentifierTypeByUuid("dfacd928-0370-4315-99d7-6ec1c9f7ae76");
-                String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "Migration");
+                String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "migration");
                 openmrsId.setIdentifierType(openmrsIdType);
                 openmrsId.setDateCreated(new Date());
                 openmrsId.setLocation(defaultLocation);
@@ -155,10 +155,9 @@ public class Moh361A {
             PatientProgram hivProgram = new PatientProgram();
             hivProgram.setPatient(patient);//enroll in HIV Program
             hivProgram.setProgram(workflowService.getProgramByUuid("dfdc6d40-2f2f-463d-ba90-cc97350441a8"));
-            if (rowData.get(3) == ""){
+            if (rowData.get(3) == "") {
                 hivProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(2).toString()));
-            }
-            else {
+            } else {
                 hivProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(3).toString()));
             }
             workflowService.savePatientProgram(hivProgram);
@@ -166,8 +165,7 @@ public class Moh361A {
 
         String enrolledInTb = rowData.get(14).toString();//enroll in HIV Program
         PatientProgram tbProgram = new PatientProgram();
-        if (enrolledInTb != "")
-        {
+        if (enrolledInTb != "") {
             tbProgram.setPatient(patient);
             tbProgram.setProgram(workflowService.getProgramByUuid("9f144a34-3a4a-44a9-8486-6b7af6cc64f6"));
             enrollInToTBProgram(patient, tbProgram, enrolledInTb);
@@ -180,11 +178,10 @@ public class Moh361A {
         enrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("de78a6be-bfc5-4634-adc3-5f1a280455cc"));
         enrollmentEncounter.setLocation(defaultLocation);
         enrollmentEncounter.setDateCreated(new Date());
-        enrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        enrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         if (rowData.get(3) == "") {
             enrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(2).toString()));
-        }
-        else{
+        } else {
             enrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(3).toString()));
         }
 
@@ -221,12 +218,11 @@ public class Moh361A {
         consultationEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
         consultationEncounter.setLocation(locationService.getLocationByUuid("f2904f27-f35f-41aa-aad1-eb7325cf72f6"));
         consultationEncounter.setDateCreated(new Date());
-        consultationEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        consultationEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
 
         if (rowData.get(3) == "") {
             consultationEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(2).toString()));
-        }
-        else{
+        } else {
             consultationEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(3).toString()));
         }
 
@@ -242,7 +238,7 @@ public class Moh361A {
         whoStageObs.setLocation(defaultLocation);
         whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         String whoStageAnswer = rowData.get(17).toString();
-        if(rowData.get(17) !=""){
+        if (rowData.get(17) != "") {
             String[] whoStage = whoStageAnswer.split("\\n");
             whoStageObs.setObsDatetime(convertStringToDate.convert(whoStage[1]));
         }
@@ -258,7 +254,7 @@ public class Moh361A {
         hivLastClinicalEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
         getLocation(hivLastClinicalEncounter, rowData);
         hivLastClinicalEncounter.setDateCreated(new Date());
-        hivLastClinicalEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        hivLastClinicalEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         hivLastClinicalEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(21).toString()));
 
         Obs lastReturnToClinicObs = new Obs();//Last return to clinic obs
@@ -274,7 +270,7 @@ public class Moh361A {
 
         checkIfPregnant(patient, rowData);
 
-        checkForArvEligibility(rowData,patient);
+        checkForArvEligibility(rowData, patient);
     }
 
     private void checkForArvEligibility(List<Object> rowData, Patient patient) throws ParseException {
@@ -314,7 +310,7 @@ public class Moh361A {
         cd4CountObs.setPerson(patient);
         cd4CountObs.setConcept(conceptService.getConceptByUuid("5497AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 
-        getReasonForArvsEligibility(patient,whoStageObs,cd4PercentObs,cd4CountObs,rowData);
+        getReasonForArvsEligibility(patient, whoStageObs, cd4PercentObs, cd4CountObs, rowData);
 
         if (rowData.get(18) != "") {
             encounter.addObs(whoStageObs);
@@ -356,7 +352,7 @@ public class Moh361A {
                             checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
                         }
 
-                    }else if(arvEligibility.length == 5){
+                    } else if (arvEligibility.length == 5) {
                         String[] cd4Count = arvEligibility[2].trim().split("\\:");
                         String[] cd4Percent = arvEligibility[3].trim().split("\\:");
 
@@ -364,7 +360,7 @@ public class Moh361A {
                         cd4CountObs.setValueNumeric(Double.valueOf(cd4Count[1]));
                         checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
                     }
-                }else if (arvEligibility[0].contains("CD4")) {//if CD4
+                } else if (arvEligibility[0].contains("CD4")) {//if CD4
                     if (arvEligibility.length == 3) {
                         if (arvEligibility[2].contains("%")) {//if CD4 %
                             String[] cd4Percent = arvEligibility[2].trim().split("\\:");
@@ -379,7 +375,7 @@ public class Moh361A {
                             checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
                         }
 
-                    }else if(arvEligibility.length == 4){
+                    } else if (arvEligibility.length == 4) {
                         String[] cd4Count = arvEligibility[2].trim().split("\\:");
                         String[] cd4Percent = arvEligibility[3].trim().split("\\:");
 
@@ -423,11 +419,11 @@ public class Moh361A {
     }
 
     private void checkIfPregnant(Patient patient, List<Object> rowData) throws ParseException {
-        String gender =rowData.get(9).toString();
+        String gender = rowData.get(9).toString();
         String isPregnant = rowData.get(15).toString();
 
-        if (gender.contains("F")){
-            if (rowData.get(15) != ""){
+        if (gender.contains("F")) {
+            if (rowData.get(15) != "") {
                 String[] obsMade = isPregnant.split("\\n");
                 String[] firstObs = obsMade[0].trim().split("\\|");
                 Date edd = convertStringToDate.convert(firstObs[0]);
@@ -466,77 +462,77 @@ public class Moh361A {
 
         String location = rowData.get(22).toString();
 
-        if (location.contains("Amase")){
+        if (location.contains("Amase")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Amase Dispensary"));
-        }else if (location.contains("LUKOLIS")){
+        } else if (location.contains("LUKOLIS")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Lukolis Model Health Centre"));
-        }else if (location.contains("Obekai")){
+        } else if (location.contains("Obekai")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Obekai Dispensary"));
-        }else if (location.contains("Busia") || location.contains("Busia Module 1") || location.contains("Busia Module 2")){
+        } else if (location.contains("Busia") || location.contains("Busia Module 1") || location.contains("Busia Module 2")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Busia District Hospital"));
-        }else if (location.contains("Nambale")){
+        } else if (location.contains("Nambale")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Nambale Health Centre"));
-        }else if (location.contains("Amukura")){
+        } else if (location.contains("Amukura")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Amukura Health Centre"));
-        }else if (location.contains("Teso")){
+        } else if (location.contains("Teso")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Teso District Hospital"));
-        }else if (location.contains("MTRH Module 1") || location.contains("MTRH Module 2") || location.contains("MTRH Module 3") || location.contains("MTRH Module 4")){
+        } else if (location.contains("MTRH Module 1") || location.contains("MTRH Module 2") || location.contains("MTRH Module 3") || location.contains("MTRH Module 4")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Moi Teaching Refferal Hospital"));
-        }else if (location.contains("Kaptama (Friends) dispensary")){
+        } else if (location.contains("Kaptama (Friends) dispensary")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Kaptama (Friends) Health Centre"));
-        }else if (location.contains("Chulaimbo") || location.contains("Chulaimbo Module 1") || location.contains("Chulaimbo Module 2")){
+        } else if (location.contains("Chulaimbo") || location.contains("Chulaimbo Module 1") || location.contains("Chulaimbo Module 2")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Chulaimbo Sub-District Hospital"));
-        }else if (location.contains("Malaba")){
+        } else if (location.contains("Malaba")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Malaba Dispensary"));
-        }else if (location.contains("Naitiri")){
+        } else if (location.contains("Naitiri")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Naitiri Sub-District Hospital"));
-        }else if (location.contains("Lupida")){
+        } else if (location.contains("Lupida")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Lupida Health Centre"));
-        }else if (location.contains("Bumala A")){
+        } else if (location.contains("Bumala A")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Bumala A Health Centre"));
-        }else if (location.contains("Bumala B")){
+        } else if (location.contains("Bumala B")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Bumala B Health Centre"));
-        }else if (location.contains("Mukhobola")){
+        } else if (location.contains("Mukhobola")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Mukhobola Health Centre"));
-        }else if (location.contains("Uasin Gishu District Hospital")){
+        } else if (location.contains("Uasin Gishu District Hospital")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Uasin Gishu District Hospital"));
-        }else if (location.contains("Iten")){
+        } else if (location.contains("Iten")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Iten District Hospital"));
-        }else if (location.contains("Burnt Forest")){
+        } else if (location.contains("Burnt Forest")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Burnt Forest Rhdc (Eldoret East)"));
-        }else if (location.contains("Kitale")){
+        } else if (location.contains("Kitale")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Kitale District Hospital"));
-        }else if (location.contains("ANGURAI")){
+        } else if (location.contains("ANGURAI")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Angurai Health Centre"));
-        }else if (location.contains("Port Victoria")){
+        } else if (location.contains("Port Victoria")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Port Victoria Hospital"));
-        }else if (location.contains("Mois Bridge")){
+        } else if (location.contains("Mois Bridge")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Moi's Bridge Health Centre"));
-        }else if (location.contains("Mosoriot")){
+        } else if (location.contains("Mosoriot")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Mosoriot Clinic"));
-        }else if (location.contains("Turbo")){
+        } else if (location.contains("Turbo")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Turbo Health Centre"));
-        }else if (location.contains("Madende Health Center")){
+        } else if (location.contains("Madende Health Center")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Madende Dispensary"));
-        }else if (location.contains("Makutano")){
+        } else if (location.contains("Makutano")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Makutano Dispensary"));
-        }else if (location.contains("Kapenguria")){
+        } else if (location.contains("Kapenguria")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Kapenguria District Hospital"));
-        }else if (location.contains("Webuye")){
+        } else if (location.contains("Webuye")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Webuye Health Centre"));
-        }else if (location.contains("Osieko")){
+        } else if (location.contains("Osieko")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Osieko Dispensary"));
-        }else if (location.contains("Moi University")){
+        } else if (location.contains("Moi University")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Moi University Health Centre"));
-        }else if (location.contains("Milo")){
+        } else if (location.contains("Milo")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Milo Health Centre"));
-        }else if (location.contains("Sio Port")){
+        } else if (location.contains("Sio Port")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Sio Port District Hospital"));
-        }else if (location.contains("Huruma SDH")){
+        } else if (location.contains("Huruma SDH")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Huruma District Hospital"));
-        }else if (location.contains("BOKOLI")){
+        } else if (location.contains("BOKOLI")) {
             hivLastClinicalEncounter.setLocation(locationService.getLocation("Bokoli Hospital"));
-        }else{
+        } else {
             hivLastClinicalEncounter.setLocation(defaultLocation);
         }
     }
@@ -565,7 +561,7 @@ public class Moh361A {
         tbEnrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("9d8498a4-372d-4dc4-a809-513a2434621e"));
         tbEnrollmentEncounter.setLocation(defaultLocation);
         tbEnrollmentEncounter.setDateCreated(new Date());
-        tbEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"),providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        tbEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         tbEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(dates1[0]));
 
         tbProgram.setDateEnrolled(convertStringToDate.convert(dates1[0]));
@@ -668,7 +664,7 @@ public class Moh361A {
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         long differenceInDays = 0;
-        if(startDate !="" && stopDate !="") {
+        if (startDate != "" && stopDate != "") {
             if (startDate.contains("/")) {
                 long difference = formatter.parse(stopDate).getTime() - formatter.parse(startDate).getTime();
                 differenceInDays = difference / (24 * 60 * 60 * 1000);
@@ -677,7 +673,7 @@ public class Moh361A {
         return Double.valueOf(differenceInDays);
     }
 
-    private void checkForValueCodedForWhoStage(Obs obs, String whoStageAnswer, Double age){
+    private void checkForValueCodedForWhoStage(Obs obs, String whoStageAnswer, Double age) {
 
         if (whoStageAnswer != "") {
             String[] whoStage = whoStageAnswer.split("\\n");
@@ -685,26 +681,26 @@ public class Moh361A {
             if (whoStage[0].equals("WHO Stage 1")) {
                 if (age < 15) {
                     obs.setValueCoded(conceptService.getConceptByUuid("1220AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-                }else{
+                } else {
                     obs.setValueCoded(conceptService.getConceptByUuid("1204AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 }
 
             } else if (whoStage[0].equals("WHO Stage 2")) {
                 if (age < 15) {
                     obs.setValueCoded(conceptService.getConceptByUuid("1221AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-                }else{
+                } else {
                     obs.setValueCoded(conceptService.getConceptByUuid("1205AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 }
             } else if (whoStage[0].equals("WHO Stage 3")) {
                 if (age < 15) {
                     obs.setValueCoded(conceptService.getConceptByUuid("1222AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-                }else{
+                } else {
                     obs.setValueCoded(conceptService.getConceptByUuid("1206AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 }
             } else if (whoStage[0].equals("WHO Stage 4")) {
                 if (age < 15) {
                     obs.setValueCoded(conceptService.getConceptByUuid("1223AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-                }else{
+                } else {
                     obs.setValueCoded(conceptService.getConceptByUuid("1207AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 }
             } else {
@@ -745,10 +741,10 @@ public class Moh361A {
         } else if (entryPointAnswer.equals("TB")) {
 
             obs.setValueCoded(conceptService.getConceptByUuid("160541AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        }  else if (entryPointAnswer.equals("HCT")) {
+        } else if (entryPointAnswer.equals("HCT")) {
 
             obs.setValueCoded(conceptService.getConceptByUuid("159938AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        }else {
+        } else {
 
             obs.setValueCoded(conceptService.getConceptByUuid("5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         }
