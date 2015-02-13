@@ -20,7 +20,10 @@
             <li><a href="#tabs-1">MOH_361A</a></li>
             <li><a href="#tabs-2">MOH_361B</a></li>
             <li><a href="#tabs-3">MOH_408</a></li>
-            <li><a href="#tabs-4">Enroll Into Hiv Program</a></li>
+          <!--  <li><a href="#tabs-4">Enroll Into Hiv Program</a></li>-->
+            <li><a href="#tabs-5">KAKUMA</a></li>
+            <li><a href="#tabs-6">MARAGUA</a></li>
+            <li><a href="#tabs-7">KISII</a></li>
         </ul>
         <div id="tabs-1">
 
@@ -57,6 +60,47 @@
 
         <div id="tabs-4">
             ${ ui.includeFragment("migrate", "enrollIntoHivProgram") }
+        </div>
+
+        <div id="tabs-5">
+            <form action="migrationHome.page" method="post">
+                <input type="file" name="kakuma" id="kakuma" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
+
+        </div>
+
+        <div id="tabs-6">
+            <form action="migrationHome.page" method="post">
+                <input type="file" name="maragua_patients"  size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
+            <br><br>
+            <form action="migrationHome.page" method="post">
+                <input type="file" name="maragua_visits" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
+
+        </div>
+
+        <div id="tabs-7">
+            <form action="migrationHome.page" method="post">
+                <input type="file" name="kisii" id="kisii" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
+
         </div>
     </div>
 </div>

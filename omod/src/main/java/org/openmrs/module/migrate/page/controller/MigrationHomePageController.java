@@ -6,6 +6,7 @@ import org.openmrs.module.migrate.MigrateConstant;
 import org.openmrs.module.migrate.Moh361A;
 import org.openmrs.module.migrate.Moh361B;
 import org.openmrs.module.migrate.Moh408;
+import org.openmrs.module.migrate.maragua.MaraguaPatients;
 import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.annotation.SpringBean;
 import org.openmrs.ui.framework.page.PageModel;
@@ -26,9 +27,29 @@ public class MigrationHomePageController {
                            @RequestParam(value = "moh361Afile", required = false) String moh361Afile,
                            @RequestParam(value = "moh361Bfile", required = false) String moh361Bfile,
                            @RequestParam(value = "moh408file", required = false) String moh408file,
+                           @RequestParam(value = "kakuma", required = false) String kakuma,
+                           @RequestParam(value = "maragua_patients", required = false) String maragua_patients,
+                           @RequestParam(value = "kisii", required = false) String kisii,
                            PageModel model,
                            HttpSession session,
                            @SpringBean KenyaUiUtils kenyaUi) throws Exception {
+
+        if (kakuma != "") {
+            String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + kakuma;
+            System.out.println("\n\n KAKUMA FILE\n\n");
+        }
+
+        if (maragua_patients != "") {
+            String path = "/home/derric/Dropbox/I-TECH/migration/maragua" + maragua_patients;
+
+            MaraguaPatients maraguaPatients = new MaraguaPatients(path, session, kenyaUi);
+            maraguaPatients.init();
+        }
+
+        if (kisii != "") {
+            String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + kisii;
+            System.out.println("\n\n KISII FILE\n\n");
+        }
 
         if (moh361Afile != "") {
             String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + moh361Afile;
