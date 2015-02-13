@@ -6,6 +6,7 @@ import org.openmrs.module.migrate.MigrateConstant;
 import org.openmrs.module.migrate.Moh361A;
 import org.openmrs.module.migrate.Moh361B;
 import org.openmrs.module.migrate.Moh408;
+import org.openmrs.module.migrate.kakuma.KakumaPatients;
 import org.openmrs.module.migrate.maragua.MaraguaPatients;
 import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.annotation.SpringBean;
@@ -27,16 +28,20 @@ public class MigrationHomePageController {
                            @RequestParam(value = "moh361Afile", required = false) String moh361Afile,
                            @RequestParam(value = "moh361Bfile", required = false) String moh361Bfile,
                            @RequestParam(value = "moh408file", required = false) String moh408file,
-                           @RequestParam(value = "kakuma", required = false) String kakuma,
+                           @RequestParam(value = "kakuma_patients", required = false) String kakuma_patients,
+                           @RequestParam(value = "kakuma_visits", required = false) String kakuma_visits,
                            @RequestParam(value = "maragua_patients", required = false) String maragua_patients,
+                           @RequestParam(value = "maragua_visits", required = false) String maragua_visits,
                            @RequestParam(value = "kisii", required = false) String kisii,
                            PageModel model,
                            HttpSession session,
                            @SpringBean KenyaUiUtils kenyaUi) throws Exception {
 
-        if (kakuma != "") {
-            String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + kakuma;
-            System.out.println("\n\n KAKUMA FILE\n\n");
+        if (kakuma_patients != "") {
+            String path = "/home/derric/Dropbox/I-TECH/migration/kakuma/" + kakuma_patients;
+            KakumaPatients kakumaPatients = new KakumaPatients(path, session, kenyaUi);
+            kakumaPatients.init();
+
         }
 
         if (maragua_patients != "") {
@@ -48,7 +53,7 @@ public class MigrationHomePageController {
 
         if (kisii != "") {
             String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + kisii;
-            System.out.println("\n\n KISII FILE\n\n");
+
         }
 
         if (moh361Afile != "") {

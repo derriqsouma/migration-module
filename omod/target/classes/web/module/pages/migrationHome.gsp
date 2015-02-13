@@ -64,12 +64,20 @@
 
         <div id="tabs-5">
             <form action="migrationHome.page" method="post">
-                <input type="file" name="kakuma" id="kakuma" size="50"/>
+                <input type="file" name="kakuma_patients" size="50"/>
                 <br/><br/>
                 <div class="ke-form-footer">
                     <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
                 </div>
             </form>
+        <br><br>
+        <form action="migrationHome.page" method="post">
+            <input type="file" name="kakuma_visits" size="50"/>
+            <br/><br/>
+            <div class="ke-form-footer">
+                <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+            </div>
+        </form>
 
         </div>
 

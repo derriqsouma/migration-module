@@ -12,10 +12,7 @@ import org.openmrs.module.migrate.ReadExcelSheet;
 import javax.servlet.http.HttpSession;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by derric on 2/12/15.
@@ -46,13 +43,10 @@ public class KakumaPatients {
     public void init() throws Exception {
         List<List<Object>> sheetData = new ArrayList();
 
-        ReadExcelSheet readExcelSheet = new ReadExcelSheet(path, session, kenyaUi);
-        sheetData = readExcelSheet.readExcelSheet();
+        ReadExcelSheetKakuma readExcelSheetKakuma = new ReadExcelSheetKakuma(path, session, kenyaUi);
+        sheetData = readExcelSheetKakuma.readExcelSheet();
 
-        System.out.println("\n\n\n");
-        System.out.println(sheetData);
-
-//        savePatientInfo(sheetData);
+        savePatientInfo(sheetData);
 
     }
 
@@ -63,26 +57,36 @@ public class KakumaPatients {
             List<Object> rowData = sheetData.get(i);
             String[] fullNames;
             String fName = "", mName = "", lName = "";
-            String gender = (String) rowData.get(9);
-            Date dob = convertStringToDate.convert((String) rowData.get(7));
-            fullNames = String.valueOf(rowData.get(6)).replaceAll("\\s+", " ").split(" ");
+            String gender = null;
+            if (rowData.get(2).toString().isEmpty() || rowData.get(7).toString().isEmpty() || rowData.get(3).toString().isEmpty() || rowData.get(9).toString().isEmpty()) {
+                continue;
+            } else {
+                if (rowData.get(7).toString().contains("MALE")) {
+                    gender = "M";
+                }
+                if (rowData.get(7).toString().contains("FEMALE")) {
+                    gender = "F";
+                }
+                String[] dob1 = String.valueOf(rowData.get(9)).replaceAll("\\s+", " ").split(" ");
+                Date dob = getBirthDate(dob1[0], Double.parseDouble((rowData.get(3).toString())));
+                fullNames = String.valueOf(rowData.get(2)).replaceAll("\\s+", " ").split(" ");
 
-            if (fullNames.length == 4) {
-                fName = fullNames[0];
-                mName = fullNames[1] + " " + fullNames[2];
-                lName = fullNames[3];
-            }
+                if (fullNames.length == 4) {
+                    fName = fullNames[0];
+                    mName = fullNames[1] + " " + fullNames[2];
+                    lName = fullNames[3];
+                }
 
-            if (fullNames.length == 3) {
-                fName = fullNames[0];
-                mName = fullNames[1];
-                lName = fullNames[2];
-            }
-            if (fullNames.length == 2) {
-                fName = fullNames[0];
-                lName = fullNames[1];
-            }
-            if (rowData.get(6) != "") {
+                if (fullNames.length == 3) {
+                    fName = fullNames[0];
+                    mName = fullNames[1];
+                    lName = fullNames[2];
+                }
+                if (fullNames.length == 2) {
+                    fName = fullNames[0];
+                    lName = fullNames[1];
+                }
+
                 Patient patient = new Patient();
 
                 PersonName personName = new PersonName();
@@ -104,27 +108,21 @@ public class KakumaPatients {
                 openmrsId.setIdentifier(generated);
                 openmrsId.setVoided(false);
 
-                PatientIdentifier amrId = new PatientIdentifier();
-                amrId.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("8d79403a-c2cc-11de-8d13-0010c6dffd0f"));
-                amrId.setDateCreated(new Date());
-                amrId.setLocation(defaultLocation);
-                amrId.setIdentifier((String) rowData.get(5));
-                amrId.setVoided(false);
 
                 PatientIdentifier upn = null;
-                if (rowData.get(4) != "") {
+                if (rowData.get(1) != "") {
                     upn = new PatientIdentifier();
                     upn.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("05ee9cf4-7242-4a17-b4d4-00f707265c8a"));
                     upn.setDateCreated(new Date());
                     upn.setLocation(defaultLocation);
-                    upn.setIdentifier(rowData.get(4).toString().replaceAll("[^\\d]", ""));
+                    upn.setIdentifier(rowData.get(0).toString().replaceAll("[^\\d]", ""));
                     upn.setVoided(false);
                     upn.setPreferred(true);
 
-                    patient.addIdentifiers(Arrays.asList(upn, openmrsId, amrId));
+                    patient.addIdentifiers(Arrays.asList(upn, openmrsId));
                     if (!patientService.isIdentifierInUseByAnotherPatient(upn)) {
-                        patientService.savePatient(patient);//saving the patient
-                        savePatientObs(patient, rowData);
+//                        patientService.savePatient(patient);//saving the patient
+//                        savePatientObs(patient, rowData);
                         counter += 1;
                     } else {
                         kenyaUi.notifyError(session, "the patient identifier #" + upn + " already in use by another patient");
@@ -132,21 +130,8 @@ public class KakumaPatients {
                         continue;
                     }
 
-                } else {
-                    amrId.setPreferred(true);
-
-                    patient.addIdentifiers(Arrays.asList(openmrsId, amrId));
-                    if (!patientService.isIdentifierInUseByAnotherPatient(amrId)) {
-                        patientService.savePatient(patient);//saving the patient
-                        savePatientObs(patient, rowData);
-                        counter += 1;
-                    } else {
-                        kenyaUi.notifyError(session, "the patient identifier #" + amrId + " already in use by another patient");
-                        System.out.println("\n\n the patient identifier #" + amrId + " already in use by another patient");
-                        continue;
-                    }
-
                 }
+
             }
         }
         kenyaUi.notifySuccess(session, " " + counter + " patient(s) added");
@@ -543,19 +528,19 @@ public class KakumaPatients {
         }
     }
 
-//    private Date getHiVDateoFEnrollment(String dateInString, Double age) throws ParseException {
-//        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-//        Calendar calendar = Calendar.getInstance();
-//        Date date = null;
-//        if (dateInString != "") {
-//            date = formatter.parse(dateInString);
-//            int months = (int)Math.round(age);
-//            calendar.setTime(date);
-//            calendar.set(Calendar.MONTH, (calendar.get(Calendar.MONTH)+months));//incrementing the date by months
-//            date = calendar.getTime();
-//        }
-//        return date;
-//    }
+    private Date getBirthDate(String dateInString, Double age) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+        Calendar calendar = Calendar.getInstance();
+        Date date = null;
+        if (dateInString != "") {
+            date = formatter.parse(dateInString);
+            int years = (int) Math.round(age);
+            calendar.setTime(date);
+            calendar.set(Calendar.YEAR, (calendar.get(Calendar.YEAR) - years));
+            date = calendar.getTime();
+        }
+        return date;
+    }
 
     private void enrollInToTBProgram(Patient patient, PatientProgram tbProgram, String enrolledInTb) throws ParseException {
         String[] tbDates = enrolledInTb.toString().split("\\n");
