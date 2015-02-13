@@ -46,8 +46,8 @@ public class MaraguaPatients {
     public void init() throws Exception {
         List<List<Object>> sheetData = new ArrayList();
 
-        ReadExcelSheet readExcelSheet = new ReadExcelSheet(path, session, kenyaUi);
-        sheetData = readExcelSheet.readExcelSheet();
+        ReadExcelSheetMaragua readExcelSheetMaragua = new ReadExcelSheetMaragua(path, session, kenyaUi);
+        sheetData = readExcelSheetMaragua.readExcelSheet();
 
         System.out.println("\n\n\n");
         System.out.println(sheetData);

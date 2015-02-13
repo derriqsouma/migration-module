@@ -58,9 +58,9 @@
 
         </div>
 
-        <div id="tabs-4">
+        <!--<div id="tabs-4">
             ${ ui.includeFragment("migrate", "enrollIntoHivProgram") }
-        </div>
+        </div>-->
 
         <div id="tabs-5">
             <form action="migrationHome.page" method="post">
