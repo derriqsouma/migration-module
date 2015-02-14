@@ -7,6 +7,7 @@ import org.openmrs.module.idgen.service.IdentifierSourceService;
 import org.openmrs.module.kenyaemr.api.KenyaEmrService;
 import org.openmrs.module.kenyaui.KenyaUiUtils;
 import org.openmrs.module.migrate.ConvertStringToDate;
+import org.openmrs.module.migrate.ConvertStringToDate1;
 import org.openmrs.module.migrate.ReadExcelSheet;
 
 import javax.servlet.http.HttpSession;
@@ -29,7 +30,7 @@ public class KakumaPatients {
     ProviderService providerService = Context.getProviderService();
     ConceptService conceptService = Context.getConceptService();
     ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
-    ConvertStringToDate convertStringToDate = new ConvertStringToDate();
+    ConvertStringToDate1 convertStringToDate = new ConvertStringToDate1();
     PatientService patientService = Context.getPatientService();
     Location defaultLocation = Context.getService(KenyaEmrService.class).getDefaultLocation();
 
@@ -58,7 +59,10 @@ public class KakumaPatients {
             String[] fullNames;
             String fName = "", mName = "", lName = "";
             String gender = null;
-            if (rowData.get(2).toString().isEmpty() || rowData.get(7).toString().isEmpty() || rowData.get(3).toString().isEmpty() || rowData.get(9).toString().isEmpty()) {
+            fullNames = String.valueOf(rowData.get(2)).replaceAll("\\s+", " ").split(" ");
+
+            if (fullNames.length <= 1 || rowData.get(2).toString().isEmpty() || rowData.get(7).toString().isEmpty() || rowData.get(3).toString().isEmpty() || rowData.get(9).toString().isEmpty()) {
+               System.out.println("\n\n\n Error \n\n\n");
                 continue;
             } else {
                 if (rowData.get(7).toString().contains("MALE")) {
@@ -69,7 +73,6 @@ public class KakumaPatients {
                 }
                 String[] dob1 = String.valueOf(rowData.get(9)).replaceAll("\\s+", " ").split(" ");
                 Date dob = getBirthDate(dob1[0], Double.parseDouble((rowData.get(3).toString())));
-                fullNames = String.valueOf(rowData.get(2)).replaceAll("\\s+", " ").split(" ");
 
                 if (fullNames.length == 4) {
                     fName = fullNames[0];
@@ -115,14 +118,15 @@ public class KakumaPatients {
                     upn.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("05ee9cf4-7242-4a17-b4d4-00f707265c8a"));
                     upn.setDateCreated(new Date());
                     upn.setLocation(defaultLocation);
-                    upn.setIdentifier(rowData.get(0).toString().replaceAll("[^\\d]", ""));
+                    upn.setIdentifier(rowData.get(1).toString().replaceAll("[^\\d]", ""));
                     upn.setVoided(false);
                     upn.setPreferred(true);
 
                     patient.addIdentifiers(Arrays.asList(upn, openmrsId));
                     if (!patientService.isIdentifierInUseByAnotherPatient(upn)) {
-//                        patientService.savePatient(patient);//saving the patient
-//                        savePatientObs(patient, rowData);
+                        System.out.println("\n\n\n "+ upn +" \n\n\n");
+                        patientService.savePatient(patient);//saving the patient
+                        savePatientObs(patient, rowData);
                         counter += 1;
                     } else {
                         kenyaUi.notifyError(session, "the patient identifier #" + upn + " already in use by another patient");
@@ -141,128 +145,128 @@ public class KakumaPatients {
 
     private void savePatientObs(Patient patient, List<Object> rowData) throws ParseException {
 
-        /*Patient Program*/
-        if (rowData.get(4) != "") {
-            PatientProgram hivProgram = new PatientProgram();
-            hivProgram.setPatient(patient);//enroll in HIV Program
-            hivProgram.setProgram(workflowService.getProgramByUuid("dfdc6d40-2f2f-463d-ba90-cc97350441a8"));
-            if (rowData.get(3) == "") {
-                hivProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(2).toString()));
-            } else {
-                hivProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(3).toString()));
-            }
-            workflowService.savePatientProgram(hivProgram);
-        }
-
-        String enrolledInTb = rowData.get(14).toString();//enroll in HIV Program
-        PatientProgram tbProgram = new PatientProgram();
-        if (enrolledInTb != "") {
-            tbProgram.setPatient(patient);
-            tbProgram.setProgram(workflowService.getProgramByUuid("9f144a34-3a4a-44a9-8486-6b7af6cc64f6"));
-            enrollInToTBProgram(patient, tbProgram, enrolledInTb);
-        }
+        String[] enrollmentDate = String.valueOf(rowData.get(9)).replaceAll("\\s+", " ").split(" ");
+        enrollIntoHiv(patient, rowData, enrollmentDate);
 
         /*enrollmentEncounter*/
         Encounter enrollmentEncounter = new Encounter();
         enrollmentEncounter.setPatient(patient);
-        enrollmentEncounter.setForm(formService.getFormByUuid("e4b506c1-7379-42b6-a374-284469cba8da"));
-        enrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("de78a6be-bfc5-4634-adc3-5f1a280455cc"));
+        enrollmentEncounter.setForm(formService.getFormByUuid("37f6bd8d-586a-4169-95fa-5781f987fe62"));
+        enrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("d1059fb9-a079-4feb-a749-eedd709ae542"));
         enrollmentEncounter.setLocation(defaultLocation);
-        enrollmentEncounter.setDateCreated(new Date());
+        enrollmentEncounter.setDateCreated(convertStringToDate.convert(enrollmentDate[0].toString()));
         enrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        if (rowData.get(3) == "") {
-            enrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(2).toString()));
-        } else {
-            enrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(3).toString()));
+        enrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+
+        Obs weight = new Obs();//weight
+        weight.setObsDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+        weight.setPerson(patient);
+        weight.setConcept(conceptService.getConceptByUuid("5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        if (rowData.get(4) != "") {
+            weight.setValueNumeric(Double.parseDouble(rowData.get(4).toString()));
         }
+        enrollmentEncounter.addObs(weight);
 
-        /*Patient Obs during enrollment*/
-        Obs entryPointObs = new Obs();//entry point
-        entryPointObs.setObsDatetime(convertStringToDate.convert(rowData.get(21).toString()));
-        entryPointObs.setPerson(patient);
-        entryPointObs.setConcept(conceptService.getConceptByUuid("160540AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        String entryPointAnswer = rowData.get(10).toString();
-        checkForValueCodedForEntryPoint(entryPointObs, entryPointAnswer);
-        enrollmentEncounter.addObs(entryPointObs);
-
-        Obs transferInObs = new Obs();//transfer in
-        transferInObs.setObsDatetime(convertStringToDate.convert(rowData.get(21).toString()));
-        transferInObs.setPerson(patient);
-        transferInObs.setConcept(conceptService.getConceptByUuid("160563AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        String isTransferAnswer = rowData.get(1).toString();
-        checkForValueCodedForIsTransferIn(transferInObs, isTransferAnswer, rowData, patient, enrollmentEncounter);
-        enrollmentEncounter.addObs(transferInObs);
-
-        Obs dateConfirmedHivObs = new Obs();//Date confirmed HIV+
-        dateConfirmedHivObs.setObsDatetime(convertStringToDate.convert(rowData.get(21).toString()));
-        dateConfirmedHivObs.setPerson(patient);
-        dateConfirmedHivObs.setConcept(conceptService.getConceptByUuid("160554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        dateConfirmedHivObs.setValueDate(convertStringToDate.convert(rowData.get(11).toString()));
-        enrollmentEncounter.addObs(dateConfirmedHivObs);
+        Obs height = new Obs();//height
+        height.setObsDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+        height.setPerson(patient);
+        height.setConcept(conceptService.getConceptByUuid("5090AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        if (rowData.get(5) != "") {
+            height.setValueNumeric(Double.parseDouble(rowData.get(5).toString()));
+        }
+        enrollmentEncounter.addObs(height);
 
         encounterService.saveEncounter(enrollmentEncounter);//saving the enrollmentEncounter
 
-         /*consultationEncounter*/
-        Encounter consultationEncounter = new Encounter();
-        consultationEncounter.setPatient(patient);
-        consultationEncounter.setForm(formService.getFormByUuid("23b4ebbd-29ad-455e-be0e-04aa6bc30798"));
-        consultationEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
-        consultationEncounter.setLocation(locationService.getLocationByUuid("f2904f27-f35f-41aa-aad1-eb7325cf72f6"));
-        consultationEncounter.setDateCreated(new Date());
-        consultationEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        visits(patient, rowData, enrollmentDate);
 
-        if (rowData.get(3) == "") {
-            consultationEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(2).toString()));
-        } else {
-            consultationEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(3).toString()));
-        }
-
-        Obs dateArtStartedObs = new Obs();//date art started
-        dateArtStartedObs.setObsDatetime(convertStringToDate.convert(rowData.get(20).toString()));
-        dateArtStartedObs.setPerson(patient);
-        dateArtStartedObs.setConcept(conceptService.getConceptByUuid("159599AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        dateArtStartedObs.setValueDate(convertStringToDate.convert(rowData.get(20).toString()));
-        consultationEncounter.addObs(dateArtStartedObs);
-
-        Obs whoStageObs = new Obs();//World Health Organization HIV stage
-        whoStageObs.setPerson(patient);
-        whoStageObs.setLocation(defaultLocation);
-        whoStageObs.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        String whoStageAnswer = rowData.get(17).toString();
-        if (rowData.get(17) != "") {
-            String[] whoStage = whoStageAnswer.split("\\n");
-            whoStageObs.setObsDatetime(convertStringToDate.convert(whoStage[1]));
-        }
-        checkForValueCodedForWhoStage(whoStageObs, whoStageAnswer, Double.valueOf(rowData.get(8).toString()));
-        consultationEncounter.addObs(whoStageObs);
-
-        encounterService.saveEncounter(consultationEncounter);//saving the consultationEncounter
-
-         /*hivLastClinicalEncounter*/
-        Encounter hivLastClinicalEncounter = new Encounter();
-        hivLastClinicalEncounter.setPatient(patient);
-        hivLastClinicalEncounter.setForm(formService.getFormByUuid("23b4ebbd-29ad-455e-be0e-04aa6bc30798"));
-        hivLastClinicalEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
-        getLocation(hivLastClinicalEncounter, rowData);
-        hivLastClinicalEncounter.setDateCreated(new Date());
-        hivLastClinicalEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        hivLastClinicalEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(21).toString()));
-
-        Obs lastReturnToClinicObs = new Obs();//Last return to clinic obs
-        lastReturnToClinicObs.setObsDatetime(convertStringToDate.convert(rowData.get(21).toString()));
-        lastReturnToClinicObs.setPerson(patient);
-        lastReturnToClinicObs.setConcept(conceptService.getConceptByUuid("5096AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        lastReturnToClinicObs.setValueDate(convertStringToDate.convert(rowData.get(23).toString()));
-        hivLastClinicalEncounter.addObs(lastReturnToClinicObs);
-
-        encounterService.saveEncounter(hivLastClinicalEncounter);//saving hivLastClinicalEncounter
-
-        getCtxObs(rowData, patient);
-
-        checkIfPregnant(patient, rowData);
-
-        checkForArvEligibility(rowData, patient);
     }
+
+    private void enrollIntoHiv(Patient patient, List<Object> rowData, String[] enrollmentDate) throws ParseException {
+        //enroll into hiv
+        PatientProgram hivProgram = new PatientProgram();
+        Encounter encounter = new Encounter();
+
+        encounter.setPatient(patient);
+        encounter.setForm(formService.getFormByUuid("e4b506c1-7379-42b6-a374-284469cba8da"));
+        encounter.setEncounterType(encounterService.getEncounterTypeByUuid("de78a6be-bfc5-4634-adc3-5f1a280455cc"));
+        encounter.setLocation(defaultLocation);
+        encounter.setDateCreated(convertStringToDate.convert(enrollmentDate[0].toString()));
+        encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        encounter.setEncounterDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+
+
+        Obs dateConfirmedHivObs = new Obs();//Date confirmed HIV+
+        dateConfirmedHivObs.setObsDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+        dateConfirmedHivObs.setPerson(patient);
+        dateConfirmedHivObs.setConcept(conceptService.getConceptByUuid("160554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        dateConfirmedHivObs.setValueDate(convertStringToDate.convert(enrollmentDate[0].toString()));
+        encounter.addObs(dateConfirmedHivObs);
+        encounterService.saveEncounter(encounter);
+
+        hivProgram.setPatient(patient);
+        hivProgram.setProgram(workflowService.getProgramByUuid("dfdc6d40-2f2f-463d-ba90-cc97350441a8"));
+        hivProgram.setDateEnrolled(convertStringToDate.convert(enrollmentDate[0].toString()));
+        workflowService.savePatientProgram(hivProgram);
+    }
+
+    private void visits(Patient patient, List<Object> rowData, String[] enrollmentDate) throws ParseException {
+
+        /*consultationEncounter*/
+        Encounter encounter = new Encounter();
+        encounter.setPatient(patient);
+        encounter.setForm(formService.getFormByUuid("23b4ebbd-29ad-455e-be0e-04aa6bc30798"));
+        encounter.setEncounterType(encounterService.getEncounterTypeByUuid("a0034eee-1940-4e35-847f-97537a35d05e"));
+        encounter.setLocation(locationService.getDefaultLocation());
+        encounter.setDateCreated(convertStringToDate.convert(enrollmentDate[0].toString()));
+        encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        encounter.setEncounterDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+
+        if (rowData.get(10) != "") {
+
+            Obs dateArtStartedObs = new Obs();//date art started
+            String[] artStartDate = String.valueOf(rowData.get(10)).replaceAll("\\s+", " ").split(" ");
+
+            dateArtStartedObs.setObsDatetime(convertStringToDate.convert(artStartDate[0].toString()));
+            dateArtStartedObs.setPerson(patient);
+            dateArtStartedObs.setConcept(conceptService.getConceptByUuid("159599AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+            dateArtStartedObs.setValueDate(convertStringToDate.convert(artStartDate[0].toString()));
+            encounter.addObs(dateArtStartedObs);
+        }
+
+        if (rowData.get(24) != "") {
+            Obs nextAppointment = new Obs();//Last return to clinic obs
+            String[] returnDate = String.valueOf(rowData.get(24)).replaceAll("\\s+", " ").split(" ");
+
+            nextAppointment.setObsDatetime(convertStringToDate.convert(returnDate[0].toString()));
+            nextAppointment.setPerson(patient);
+            nextAppointment.setConcept(conceptService.getConceptByUuid("5096AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+            nextAppointment.setValueDate(convertStringToDate.convert(returnDate[0].toString()));
+            encounter.addObs(nextAppointment);
+        }
+
+        Obs weight = new Obs();//weight
+        weight.setObsDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+        weight.setPerson(patient);
+        weight.setConcept(conceptService.getConceptByUuid("5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        if (rowData.get(4) != "") {
+            weight.setValueNumeric(Double.parseDouble(rowData.get(4).toString()));
+        }
+        encounter.addObs(weight);
+
+        Obs height = new Obs();//height
+        height.setObsDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+        height.setPerson(patient);
+        height.setConcept(conceptService.getConceptByUuid("5090AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        if (rowData.get(5) != "") {
+            height.setValueNumeric(Double.parseDouble(rowData.get(5).toString()));
+        }
+        encounter.addObs(height);
+
+        encounterService.saveEncounter(encounter);
+
+    }
+
 
     private void checkForArvEligibility(List<Object> rowData, Patient patient) throws ParseException {
 
