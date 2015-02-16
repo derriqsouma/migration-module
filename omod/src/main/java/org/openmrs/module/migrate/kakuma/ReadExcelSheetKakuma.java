@@ -50,7 +50,7 @@ public class ReadExcelSheetKakuma {
                     continue;
                 }
 
-                int expectedColumns = 25;
+                int expectedColumns = 45;
                 List<Object> rowData = new ArrayList();
 
                 for (int i = 0; i < expectedColumns; i++) {

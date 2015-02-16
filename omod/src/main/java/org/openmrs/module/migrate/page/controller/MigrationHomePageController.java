@@ -6,7 +6,9 @@ import org.openmrs.module.migrate.MigrateConstant;
 import org.openmrs.module.migrate.Moh361A;
 import org.openmrs.module.migrate.Moh361B;
 import org.openmrs.module.migrate.Moh408;
+import org.openmrs.module.migrate.kakuma.KakumaEid;
 import org.openmrs.module.migrate.kakuma.KakumaPatients;
+import org.openmrs.module.migrate.kakuma.KakumaVisits;
 import org.openmrs.module.migrate.maragua.MaraguaPatients;
 import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.annotation.SpringBean;
@@ -30,6 +32,7 @@ public class MigrationHomePageController {
                            @RequestParam(value = "moh408file", required = false) String moh408file,
                            @RequestParam(value = "kakuma_patients", required = false) String kakuma_patients,
                            @RequestParam(value = "kakuma_visits", required = false) String kakuma_visits,
+                           @RequestParam(value = "kakuma_eid", required = false) String kakuma_eid,
                            @RequestParam(value = "maragua_patients", required = false) String maragua_patients,
                            @RequestParam(value = "maragua_visits", required = false) String maragua_visits,
                            @RequestParam(value = "kisii", required = false) String kisii,
@@ -38,9 +41,21 @@ public class MigrationHomePageController {
                            @SpringBean KenyaUiUtils kenyaUi) throws Exception {
 
         if (kakuma_patients != "") {
-            String path = "/home/derric/Dropbox/I-TECH/migration/kakuma/" + kakuma_patients;
+            String path = "/home/derric/Desktop/migration/migration/kakuma/" + kakuma_patients;
             KakumaPatients kakumaPatients = new KakumaPatients(path, session, kenyaUi);
             kakumaPatients.init();
+
+        }
+        if (kakuma_visits != "") {
+            String path = "/home/derric/Desktop/migration/migration/kakuma/" + kakuma_visits;
+            KakumaVisits kakumaVisits = new KakumaVisits(path, session, kenyaUi);
+            kakumaVisits.init();
+
+        }
+        if (kakuma_eid != "") {
+            String path = "/home/derric/Desktop/migration/migration/kakuma/" + kakuma_eid;
+            KakumaEid kakumaEid= new KakumaEid(path, session, kenyaUi);
+            kakumaEid.init();
 
         }
 
