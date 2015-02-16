@@ -57,25 +57,38 @@ public class KakumaEid {
             String[] fullNames;
             String fName = "", mName = "", lName = "";
             String gender = (String) rowData.get(7);
-            Date dob = convertStringToDate.convert((String) rowData.get(6));
-            fullNames = String.valueOf(rowData.get(4)).replaceAll("\\s+", " ").split(" ");
+            Date dob = null;
+            fullNames = String.valueOf(rowData.get(3)).replaceAll("\\s+", " ").split(" ");
 
-            if (fullNames.length == 4) {
-                fName = fullNames[0];
-                mName = fullNames[1] + " " + fullNames[2];
-                lName = fullNames[3];
-            }
+            if (fullNames.length <= 1 || rowData.get(3).toString().isEmpty() || rowData.get(5).toString().isEmpty() || rowData.get(6).toString().isEmpty() ) {
+                System.out.println("\n\n\n Error \n\n\n");
+                continue;
+            }else {
+                if (rowData.get(6).toString().contains("MALE")) {
+                    gender = "M";
+                }
+                if (rowData.get(6).toString().contains("FEMALE")) {
+                    gender = "F";
+                }
+                String[] dob1 = String.valueOf(rowData.get(5)).replaceAll("\\s+", " ").split(" ");
+                dob = convertStringToDate.convert(dob1[0].toString());
 
-            if (fullNames.length == 3) {
-                fName = fullNames[0];
-                mName = fullNames[1];
-                lName = fullNames[2];
-            }
-            if (fullNames.length == 2) {
-                fName = fullNames[0];
-                lName = fullNames[1];
-            }
-            if (rowData.get(4).toString() != "") {
+                if (fullNames.length == 4) {
+                    fName = fullNames[0];
+                    mName = fullNames[1] + " " + fullNames[2];
+                    lName = fullNames[3];
+                }
+
+                if (fullNames.length == 3) {
+                    fName = fullNames[0];
+                    mName = fullNames[1];
+                    lName = fullNames[2];
+                }
+                if (fullNames.length == 2) {
+                    fName = fullNames[0];
+                    lName = fullNames[1];
+                }
+
                 Patient patient = new Patient();
 
                 PersonName personName = new PersonName();
@@ -90,32 +103,27 @@ public class KakumaEid {
                 PatientIdentifier openmrsId = new PatientIdentifier();
                 //generating open mrs id
                 PatientIdentifierType openmrsIdType = patientService.getPatientIdentifierTypeByUuid("dfacd928-0370-4315-99d7-6ec1c9f7ae76");
-                String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "Migration");
+                String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "migration");
                 openmrsId.setIdentifierType(openmrsIdType);
                 openmrsId.setDateCreated(new Date());
                 openmrsId.setLocation(defaultLocation);
                 openmrsId.setIdentifier(generated);
                 openmrsId.setVoided(false);
+                openmrsId.setPreferred(true);
 
-                PatientIdentifier amrId = new PatientIdentifier();
-                amrId.setIdentifierType(patientService.getPatientIdentifierTypeByUuid("8d79403a-c2cc-11de-8d13-0010c6dffd0f"));
-                amrId.setDateCreated(new Date());
-                amrId.setLocation(defaultLocation);
-                amrId.setIdentifier((String) rowData.get(2));
-                amrId.setVoided(false);
-                amrId.setPreferred(true);
-
-                patient.addIdentifiers(Arrays.asList(openmrsId, amrId));
-                if (!patientService.isIdentifierInUseByAnotherPatient(amrId)) {
+                patient.addIdentifier(openmrsId);
+                if (!patientService.isIdentifierInUseByAnotherPatient(openmrsId)) {
                     patientService.savePatient(patient);//saving the patient
-                    enrollInToMch_csProgram(rowData, patient);
+                    addRelationship(rowData, patient);
+                    enrollInToMch_csProgram(rowData,patient);
                     counter += 1;
-
                 } else {
-                    kenyaUi.notifyError(session, "the patient identifier #" + amrId + " already in use by another patient");
-                    System.out.println("\n\n the patient identifier #" + amrId + " already in use by another patient");
-                    continue;
+                        kenyaUi.notifyError(session, "the patient identifier #" + openmrsId + " already in use by another patient");
+                        System.out.println("\n\n the patient identifier #" + openmrsId + " already in use by another patient");
+                        continue;
                 }
+
+
             }
         }
         System.out.println(counter + " infant(s) added");
@@ -123,41 +131,31 @@ public class KakumaEid {
 
     private void enrollInToMch_csProgram(List<Object> rowData, Patient patient) throws ParseException {
 
+        String[] enrollmentDate = String.valueOf(rowData.get(4)).replaceAll("\\s+", " ").split(" ");
+
         PatientProgram mch_csProgram = new PatientProgram();//enroll into MCHCS Program
         mch_csProgram.setPatient(patient);
         mch_csProgram.setProgram(workflowService.getProgramByUuid("c2ecdf11-97cd-432a-a971-cfd9bd296b83"));
-        mch_csProgram.setDateEnrolled(convertStringToDate.convert(rowData.get(1).toString()));
+        if (rowData.get(4) != "") {
+            mch_csProgram.setDateEnrolled(convertStringToDate.convert(enrollmentDate[0].toString()));
+        }else {
+            mch_csProgram.setDateEnrolled(new Date());
+        }
         workflowService.savePatientProgram(mch_csProgram);
-
-        addRelationship(rowData, patient);
 
         Encounter mch_csEnrollmentEncounter = new Encounter();
         mch_csEnrollmentEncounter.setPatient(patient);
         mch_csEnrollmentEncounter.setForm(formService.getFormByUuid("8553d869-bdc8-4287-8505-910c7c998aff"));
         mch_csEnrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("415f5136-ca4a-49a8-8db3-f994187c3af6"));
-
-        String location = rowData.get(13).toString();
-//        getLocation(mch_csEnrollmentEncounter, location);
-
-        mch_csEnrollmentEncounter.setDateCreated(new Date());
-        mch_csEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
-        mch_csEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(rowData.get(1).toString()));
-
-        //enrollment obs
-        Obs obs = new Obs();
-        obs.setObsDatetime(convertStringToDate.convert(rowData.get(1).toString()));
-        obs.setPerson(patient);
-        obs.setConcept(conceptService.getConceptByUuid("5303AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        if (rowData.get(56) != "") {
-            if (rowData.get(56).toString().contains("negative")) {
-                obs.setValueCoded(conceptService.getConceptByUuid("1066AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-            } else {
-                obs.setValueCoded(conceptService.getConceptByUuid("822AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-            }
+        if (rowData.get(4) != "") {
+            mch_csEnrollmentEncounter.setDateCreated(convertStringToDate.convert(enrollmentDate[0].toString()));
+            mch_csEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+        }else {
+            mch_csEnrollmentEncounter.setDateCreated(new Date());
+            mch_csEnrollmentEncounter.setEncounterDatetime(new Date());
         }
-        mch_csEnrollmentEncounter.addObs(obs);
+        mch_csEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
 
-        saveInfantObs(patient, rowData);
         encounterService.saveEncounter(mch_csEnrollmentEncounter);
     }
 
@@ -260,9 +258,9 @@ public class KakumaEid {
     }
 
     private void addRelationship(List<Object> rowData, Patient patient) {
-        String name = rowData.get(10).toString().replaceAll("\\s+", " ");
-        Patient patient1 = new Patient();
-        List<Patient> patientList = patientService.getPatients(name, null, null, true);
+        String upn = rowData.get(0).toString();
+        Patient patient1;
+        List<Patient> patientList = patientService.getPatients(null, upn, null, true);
 
         if (patientList.size() > 0) {
             Relationship relationship = new Relationship();
@@ -271,9 +269,9 @@ public class KakumaEid {
             relationship.setPersonA(patient1);
             relationship.setPersonB(patient);
             relationship.setRelationshipType(personService.getRelationshipTypeByUuid("8d91a210-c2cc-11de-8d13-0010c6dffd0f"));
-            if (patient.getNames() != patient1.getNames()) {
+//            if (patient.getNames() != patient1.getNames()) {
                 personService.saveRelationship(relationship);
-            }
+//            }
         }
     }
 }
