@@ -9,6 +9,7 @@ import org.openmrs.module.migrate.Moh408;
 import org.openmrs.module.migrate.kakuma.KakumaEid;
 import org.openmrs.module.migrate.kakuma.KakumaPatients;
 import org.openmrs.module.migrate.kakuma.KakumaVisits;
+import org.openmrs.module.migrate.kisii.Kisii;
 import org.openmrs.module.migrate.maragua.MaraguaPatients;
 import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.annotation.SpringBean;
@@ -67,7 +68,9 @@ public class MigrationHomePageController {
         }
 
         if (kisii != "") {
-            String path = "/home/derric/Desktop/ampath_data/MOH_361A/" + kisii;
+            String path = "/home/derric/Desktop/migration/migration/" + kisii;
+            Kisii kisii1 = new Kisii(path, session, kenyaUi);
+            kisii1.init();
 
         }
 
