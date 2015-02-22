@@ -143,33 +143,42 @@ public class KakumaEid {
         }
         workflowService.savePatientProgram(mch_csProgram);
 
-        Encounter mch_csEnrollmentEncounter = new Encounter();
-        mch_csEnrollmentEncounter.setPatient(patient);
-        mch_csEnrollmentEncounter.setForm(formService.getFormByUuid("8553d869-bdc8-4287-8505-910c7c998aff"));
-        mch_csEnrollmentEncounter.setEncounterType(encounterService.getEncounterTypeByUuid("415f5136-ca4a-49a8-8db3-f994187c3af6"));
+        Encounter encounter = new Encounter();
+        encounter.setPatient(patient);
+        encounter.setForm(formService.getFormByUuid("8553d869-bdc8-4287-8505-910c7c998aff"));
+        encounter.setEncounterType(encounterService.getEncounterTypeByUuid("415f5136-ca4a-49a8-8db3-f994187c3af6"));
         if (rowData.get(4) != "") {
-            mch_csEnrollmentEncounter.setDateCreated(convertStringToDate.convert(enrollmentDate[0].toString()));
-            mch_csEnrollmentEncounter.setEncounterDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+            encounter.setDateCreated(convertStringToDate.convert(enrollmentDate[0].toString()));
+            encounter.setEncounterDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
         }else {
-            mch_csEnrollmentEncounter.setDateCreated(new Date());
-            mch_csEnrollmentEncounter.setEncounterDatetime(new Date());
+            encounter.setDateCreated(new Date());
+            encounter.setEncounterDatetime(new Date());
         }
-        mch_csEnrollmentEncounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
+        encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
 
-        encounterService.saveEncounter(mch_csEnrollmentEncounter);
+
+        Obs infantFeedingObs = new Obs();// infant feeding
+        if (rowData.get(4) != "") {
+            infantFeedingObs.setObsDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
+        }else {
+            infantFeedingObs.setObsDatetime(new Date());
+        }
+        infantFeedingObs.setPerson(patient);
+        infantFeedingObs.setConcept(conceptService.getConceptByUuid("1151AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        checkForValueCodedForInfantFeedingMethod(infantFeedingObs, rowData);
+        encounter.addObs(infantFeedingObs);
+
+        encounterService.saveEncounter(encounter);
     }
 
     private void saveInfantObs(Patient patient, List<Object> rowData) throws ParseException {
-
-        /*First DNA PCR Test at 6 weeks or First Contact*/
 
         Encounter encounter = new Encounter();
         encounter.setPatient(patient);
         encounter.setForm(formService.getFormByUuid("755b59e6-acbb-4853-abaf-be302039f902"));
         encounter.setEncounterType(encounterService.getEncounterTypeByUuid("bcc6da85-72f2-4291-b206-789b8186a021"));
         encounter.setLocation(defaultLocation);
-//        String location = rowData.get(13).toString();
-//        getLocation(encounter, location);
+
         encounter.setDateCreated(new Date());
         encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
         encounter.setEncounterDatetime(new Date());
@@ -246,11 +255,11 @@ public class KakumaEid {
 
     private void checkForValueCodedForInfantFeedingMethod(Obs obs, List<Object> rowData) {
 
-        if (rowData.get(20) != "") {
-            if (rowData.get(20).toString().equals("EBF")) {
+        if (rowData.get(9) != "") {
+            if (rowData.get(9).toString().equals("EBF")) {
                 obs.setValueCoded(conceptService.getConceptByUuid("1065AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 
-            } else if (rowData.get(20).toString().equals("MF")) {
+            } else if (rowData.get(9).toString().equals("MF")) {
                 obs.setValueCoded(conceptService.getConceptByUuid("6046AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 
             }

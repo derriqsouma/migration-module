@@ -57,7 +57,7 @@ public class ReadExcelSheetMaragua {
                     continue;
                 }
 
-                int expectedColumns = 34;
+                int expectedColumns = 50;
                 List<Object> rowData = new ArrayList();
 
                 for (int i = 0; i < expectedColumns; i++) {

@@ -61,7 +61,7 @@ public class MigrationHomePageController {
         }
 
         if (maragua_patients != "") {
-            String path = "/home/derric/Dropbox/I-TECH/migration/maragua/" + maragua_patients;
+            String path = "/home/derric/Desktop/migration/migration/maragua/" + maragua_patients;
 
             MaraguaPatients maraguaPatients = new MaraguaPatients(path, session, kenyaUi);
             maraguaPatients.init();
