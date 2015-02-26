@@ -11,6 +11,7 @@ import org.openmrs.module.migrate.kakuma.KakumaPatients;
 import org.openmrs.module.migrate.kakuma.KakumaVisits;
 import org.openmrs.module.migrate.kisii.Kisii;
 import org.openmrs.module.migrate.maragua.MaraguaPatients;
+import org.openmrs.module.migrate.maragua.MaraguaVisits;
 import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.annotation.SpringBean;
 import org.openmrs.ui.framework.page.PageModel;
@@ -65,6 +66,12 @@ public class MigrationHomePageController {
 
             MaraguaPatients maraguaPatients = new MaraguaPatients(path, session, kenyaUi);
             maraguaPatients.init();
+        }
+        if (maragua_visits != "") {
+            String path = "/home/derric/Desktop/migration/migration/maragua/" + maragua_visits;
+
+            MaraguaVisits maraguaVisits = new MaraguaVisits(path, session, kenyaUi);
+            maraguaVisits.init();
         }
 
         if (kisii != "") {

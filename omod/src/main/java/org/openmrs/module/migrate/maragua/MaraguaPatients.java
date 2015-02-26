@@ -47,9 +47,6 @@ public class MaraguaPatients {
         ReadExcelSheetMaragua readExcelSheetMaragua = new ReadExcelSheetMaragua(path, session, kenyaUi);
         sheetData = readExcelSheetMaragua.readExcelSheet();
 
-        System.out.println("\n\n\n");
-        System.out.println(sheetData);
-
         savePatientInfo(sheetData);
 
     }
@@ -63,7 +60,8 @@ public class MaraguaPatients {
             String fName = "", mName = "", lName = "";
             String gender = null;
             Date dob = null;
-            fullNames = String.valueOf(rowData.get(8)).replaceAll("\\s+", " ").split(" ");
+
+            fullNames = String.valueOf(rowData.get(8)).replaceAll("\\s+", " ").trim().split(" ");
 
             if (fullNames.length <= 1 ){
                 System.out.println("\n\n\n Error  "+ rowData.get(8).toString() +" \n\n\n");
@@ -192,11 +190,14 @@ public class MaraguaPatients {
             dead.setPerson(patient);
             dead.setConcept(conceptService.getConceptByUuid("160432AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
             dead.setValueCoded(conceptService.getConceptByUuid("160432AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-            enrollmentEncounter.addObs(dead);
+            if (convertStringToDate.convert(date[0]).before(new Date())) {
+                enrollmentEncounter.addObs(dead);
+            }
 
         }
-
-        encounterService.saveEncounter(enrollmentEncounter);//saving the enrollmentEncounter
+        if (convertStringToDate.convert(enrollmentDate[0].toString()).before(new Date())) {
+            encounterService.saveEncounter(enrollmentEncounter);//saving the enrollmentEncounter
+        }
 
     }
 
@@ -214,8 +215,6 @@ public class MaraguaPatients {
             encounter.setDateCreated(convertStringToDate.convert(enrollmentDate[0].toString()));
             encounter.setProvider(encounterService.getEncounterRoleByUuid("a0b03050-c99b-11e0-9572-0800200c9a66"), providerService.getProviderByUuid("ae01b8ff-a4cc-4012-bcf7-72359e852e14"));
             encounter.setEncounterDatetime(convertStringToDate.convert(enrollmentDate[0].toString()));
-            encounterService.saveEncounter(encounter);
-
 
             if (rowData.get(12).toString().contains("1") && rowData.get(13) != "") {
                 String[] date = String.valueOf(rowData.get(13)).replaceAll("\\s+", " ").split(" ");
@@ -224,7 +223,10 @@ public class MaraguaPatients {
                 transferInObs.setPerson(patient);
                 transferInObs.setConcept(conceptService.getConceptByUuid("160563AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 transferInObs.setValueCoded(conceptService.getConceptByUuid("1065AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-                encounter.addObs(transferInObs);
+
+                if(convertStringToDate.convert(date[0]).before(new Date())) {
+                    encounter.addObs(transferInObs);
+                }
 
                 Obs transferInDateObs = new Obs();
                 transferInDateObs.setObsDatetime(convertStringToDate.convert(date[0]));
@@ -232,9 +234,16 @@ public class MaraguaPatients {
                 transferInDateObs.setConcept(conceptService.getConceptByUuid("160534AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 transferInDateObs.setValueDate(convertStringToDate.convert(date[0]));
 
-                encounter.addObs(transferInDateObs);
+                if(convertStringToDate.convert(date[0]).before(new Date())) {
+                    encounter.addObs(transferInDateObs);
+                }
             }
-
+            if(convertStringToDate.convert(enrollmentDate[0].toString()).before(new Date())) {
+                encounterService.saveEncounter(encounter);
+            }
+            else {
+                System.out.println("\n\n Date \n\n\n");
+            }
 
             hivProgram.setPatient(patient);
             hivProgram.setProgram(workflowService.getProgramByUuid("dfdc6d40-2f2f-463d-ba90-cc97350441a8"));
