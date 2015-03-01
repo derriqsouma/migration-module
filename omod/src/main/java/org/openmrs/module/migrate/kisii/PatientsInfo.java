@@ -128,7 +128,7 @@ public class PatientsInfo {
                     patient.addIdentifiers(Arrays.asList(upn, openmrsId));
                     if (!patientService.isIdentifierInUseByAnotherPatient(upn)) {
                         System.out.println("\n\n\n " + upn + "  " + patient.getGivenName() + " \n\n\n");
-//                        patientService.savePatient(patient);//saving the patient
+                        patientService.savePatient(patient);//saving the patient
                         savePatientObs(patient, rowData);
                         counter += 1;
                     } else {
@@ -179,6 +179,17 @@ public class PatientsInfo {
             }
         }
         if (rowData.get(10) != "") {
+            Obs dateFirstEnrolled = new Obs();//date first enrolled into hiv
+            dateFirstEnrolled.setObsDatetime(convertStringToDate.convert(rowData.get(50).toString()));
+            dateFirstEnrolled.setPerson(patient);
+            dateFirstEnrolled.setConcept(conceptService.getConceptByUuid("160555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+            if (rowData.get(17) != "") {
+                if (convertStringToDate.convert(rowData.get(17).toString()).before(new Date())) {
+                    dateFirstEnrolled.setValueDate(convertStringToDate.convert(rowData.get(17).toString()));
+                    hivEnrollmentEncounter.addObs(dateFirstEnrolled);
+                }
+            }
+
             Obs transferInObs = new Obs();//transfer in
             transferInObs.setObsDatetime(convertStringToDate.convert(rowData.get(50).toString()));
             transferInObs.setPerson(patient);
@@ -215,14 +226,16 @@ public class PatientsInfo {
             if (rowData.get(13) != "") {
                 hivEnrollmentEncounter.addObs(transferInArtStartDate);
             }
-
         }
+
+        visit(patient,rowData,consultationEncounter);
+
         if (rowData.get(50) != "") {
             encounterService.saveEncounter(hivEnrollmentEncounter);
             encounterService.saveEncounter(consultationEncounter);
         }
-
         enrollIntoHiv(patient,rowData);
+
     }
 
     private void enrollIntoHiv(Patient patient, List<Object> rowData) throws ParseException {
@@ -266,6 +279,103 @@ public class PatientsInfo {
             obs.setValueCoded(conceptService.getConceptByUuid("5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         }
 
+    }
+
+    private void visit(Patient patient, List<Object> rowData, Encounter encounter) throws ParseException {
+        Obs whoStage = new Obs();
+        whoStage.setPerson(patient);
+        whoStage.setLocation(defaultLocation);
+        whoStage.setConcept(conceptService.getConceptByUuid("5356AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        whoStage.setObsDatetime(convertStringToDate.convert(rowData.get(50).toString()));
+        checkForValueCodedForWhoStage(whoStage, rowData);
+        encounter.addObs(whoStage);
+
+        Obs dateEligibleForArvObs = new Obs();//date eligible for ARVs
+        dateEligibleForArvObs.setObsDatetime(convertStringToDate.convert(rowData.get(50).toString()));
+        dateEligibleForArvObs.setPerson(patient);
+        dateEligibleForArvObs.setConcept(conceptService.getConceptByUuid("162227AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        dateEligibleForArvObs.setValueDate(convertStringToDate.convert(rowData.get(23).toString()));
+        if (rowData.get(23) != "") {
+            encounter.addObs(dateEligibleForArvObs);
+        }
+
+        Obs cd4PercentObs = new Obs();
+        cd4PercentObs.setObsDatetime(convertStringToDate.convert(rowData.get(50).toString()));
+        cd4PercentObs.setPerson(patient);
+        cd4PercentObs.setConcept(conceptService.getConceptByUuid("730AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        if (rowData.get(31) != "") {
+            cd4PercentObs.setValueNumeric(Double.valueOf(rowData.get(31).toString()));
+        }
+        encounter.addObs(cd4PercentObs);
+
+        Obs cd4CountObs = new Obs();
+        cd4CountObs.setObsDatetime(convertStringToDate.convert(rowData.get(50).toString()));
+        cd4CountObs.setPerson(patient);
+        cd4CountObs.setConcept(conceptService.getConceptByUuid("5497AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        if (rowData.get(30) != "") {
+            cd4CountObs.setValueNumeric(Double.valueOf(rowData.get(30).toString()));
+        }
+        encounter.addObs(cd4CountObs);
+
+
+        Obs weight = new Obs();//weight
+        weight.setObsDatetime(convertStringToDate.convert(rowData.get(50).toString()));
+        weight.setPerson(patient);
+        weight.setConcept(conceptService.getConceptByUuid("5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        if (rowData.get(35) != "") {
+            weight.setValueNumeric(Double.parseDouble(rowData.get(35).toString()));
+        }
+        encounter.addObs(weight);
+
+        Obs height = new Obs();//height
+        height.setObsDatetime(convertStringToDate.convert(rowData.get(50).toString()));
+        height.setPerson(patient);
+        height.setConcept(conceptService.getConceptByUuid("5090AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        if (rowData.get(36) != "") {
+            height.setValueNumeric(Double.parseDouble(rowData.get(36).toString()));
+        }
+        encounter.addObs(height);
+
+    }
+
+    private void checkForValueCodedForWhoStage(Obs obs, List<Object> rowData) {
+
+        if (rowData.get(18) != "") {
+            Double age = 0.0;
+            if (rowData.get(4) != "") {
+                age = Double.valueOf(rowData.get(4).toString());
+            }
+
+            if (rowData.get(18).toString().equals("1.0")) {
+                if (age < 15 && age !=0.0) {
+                    obs.setValueCoded(conceptService.getConceptByUuid("1220AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                } else {
+                    obs.setValueCoded(conceptService.getConceptByUuid("1204AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                }
+
+            } else if (rowData.get(4).toString().equals("2.0")) {
+                if (age < 15 && age !=0.0) {
+                    obs.setValueCoded(conceptService.getConceptByUuid("1221AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                } else {
+                    obs.setValueCoded(conceptService.getConceptByUuid("1205AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                }
+            } else if (rowData.get(4).toString().equals("3.0")) {
+                if (age < 15 && age !=0.0) {
+                    obs.setValueCoded(conceptService.getConceptByUuid("1222AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                } else {
+                    obs.setValueCoded(conceptService.getConceptByUuid("1206AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                }
+            } else if (rowData.get(4).toString().equals("4.0")) {
+                if (age < 15 && age !=0.0) {
+                    obs.setValueCoded(conceptService.getConceptByUuid("1223AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                } else {
+                    obs.setValueCoded(conceptService.getConceptByUuid("1207AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                }
+            } else {
+
+                obs.setValueCoded(conceptService.getConceptByUuid("1067AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+            }
+        }
     }
 
 
