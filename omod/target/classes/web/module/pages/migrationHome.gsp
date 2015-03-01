@@ -110,7 +110,15 @@
 
         <div id="tabs-7">
             <form action="migrationHome.page" method="post">
-                <input type="file" name="kisii" id="kisii" size="50"/>
+                <input type="file" name="kisii_patients" id="kisii_patients" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
+            <br><br>
+            <form action="migrationHome.page" method="post">
+                <input type="file" name="kisii_visits" id="kisii_visits" size="50"/>
                 <br/><br/>
                 <div class="ke-form-footer">
                     <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>

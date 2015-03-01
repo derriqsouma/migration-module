@@ -10,6 +10,7 @@ import org.openmrs.module.migrate.kakuma.KakumaEid;
 import org.openmrs.module.migrate.kakuma.KakumaPatients;
 import org.openmrs.module.migrate.kakuma.KakumaVisits;
 import org.openmrs.module.migrate.kisii.Kisii;
+import org.openmrs.module.migrate.kisii.PatientsInfo;
 import org.openmrs.module.migrate.maragua.MaraguaPatients;
 import org.openmrs.module.migrate.maragua.MaraguaVisits;
 import org.openmrs.ui.framework.UiUtils;
@@ -37,7 +38,8 @@ public class MigrationHomePageController {
                            @RequestParam(value = "kakuma_eid", required = false) String kakuma_eid,
                            @RequestParam(value = "maragua_patients", required = false) String maragua_patients,
                            @RequestParam(value = "maragua_visits", required = false) String maragua_visits,
-                           @RequestParam(value = "kisii", required = false) String kisii,
+                           @RequestParam(value = "kisii_patients", required = false) String kisii_patients,
+                           @RequestParam(value = "kisii_visits", required = false) String kisii_visits,
                            PageModel model,
                            HttpSession session,
                            @SpringBean KenyaUiUtils kenyaUi) throws Exception {
@@ -74,10 +76,16 @@ public class MigrationHomePageController {
             maraguaVisits.init();
         }
 
-        if (kisii != "") {
-            String path = "/home/derric/Desktop/migration/migration/" + kisii;
-            Kisii kisii1 = new Kisii(path, session, kenyaUi);
-            kisii1.init();
+        if (kisii_patients != "") {
+            String path = "/home/derric/Desktop/migration/migration/kisii/" + kisii_patients;
+            PatientsInfo patientsInfo = new PatientsInfo(path, session, kenyaUi);
+            patientsInfo.init();
+        }
+
+        if (kisii_visits != "") {
+            String path = "/home/derric/Desktop/migration/migration/kisii/" + kisii_visits;
+           /* Kisii kisii1 = new Kisii(path, session, kenyaUi);
+            kisii1.init();*/
 
         }
 
