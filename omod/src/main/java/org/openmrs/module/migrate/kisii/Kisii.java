@@ -5,6 +5,7 @@ import org.openmrs.api.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.kenyaemr.api.KenyaEmrService;
 import org.openmrs.module.kenyaui.KenyaUiUtils;
+import org.openmrs.module.migrate.ConvertStringToDate;
 import org.openmrs.module.migrate.ConvertStringToDate1;
 
 import javax.servlet.http.HttpSession;
@@ -29,7 +30,7 @@ public class Kisii {
     ConceptService conceptService = Context.getConceptService();
     Patient patient = new Patient();
     ProgramWorkflowService workflowService = Context.getProgramWorkflowService();
-    ConvertStringToDate1 convertStringToDate = new ConvertStringToDate1();
+    ConvertStringToDate convertStringToDate = new ConvertStringToDate();
     PatientService patientService = Context.getPatientService();
     Location defaultLocation = Context.getService(KenyaEmrService.class).getDefaultLocation();
 

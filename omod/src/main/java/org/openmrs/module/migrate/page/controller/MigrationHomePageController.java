@@ -11,6 +11,7 @@ import org.openmrs.module.migrate.kakuma.KakumaPatients;
 import org.openmrs.module.migrate.kakuma.KakumaVisits;
 import org.openmrs.module.migrate.kisii.Kisii;
 import org.openmrs.module.migrate.kisii.PatientsInfo;
+import org.openmrs.module.migrate.kisii.RegimenSubstitution;
 import org.openmrs.module.migrate.maragua.MaraguaPatients;
 import org.openmrs.module.migrate.maragua.MaraguaVisits;
 import org.openmrs.ui.framework.UiUtils;
@@ -40,6 +41,7 @@ public class MigrationHomePageController {
                            @RequestParam(value = "maragua_visits", required = false) String maragua_visits,
                            @RequestParam(value = "kisii_patients", required = false) String kisii_patients,
                            @RequestParam(value = "kisii_visits", required = false) String kisii_visits,
+                           @RequestParam(value = "regmen_subs", required = false) String regmen_subs,
                            PageModel model,
                            HttpSession session,
                            @SpringBean KenyaUiUtils kenyaUi) throws Exception {
@@ -86,6 +88,12 @@ public class MigrationHomePageController {
             String path = "/home/derric/Desktop/migration/migration/kisii/" + kisii_visits;
            /* Kisii kisii1 = new Kisii(path, session, kenyaUi);
             kisii1.init();*/
+
+        }
+        if (regmen_subs != "") {
+            String path = "/home/derric/Desktop/migration/migration/kisii/" + regmen_subs;
+            RegimenSubstitution regimenSubstitution = new RegimenSubstitution(path, session, kenyaUi);
+            regimenSubstitution.init();
 
         }
 

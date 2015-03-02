@@ -125,6 +125,15 @@
                 </div>
             </form>
 
+            <br><br>
+            <form action="migrationHome.page" method="post">
+                <input type="file" name="regmen_subs" id="regmen_subs" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
+
         </div>
     </div>
 </div>
