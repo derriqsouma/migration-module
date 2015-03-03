@@ -381,58 +381,64 @@ public class PatientsInfo {
 
     private void saveDrugOrders(Patient patient, List<Object> rowData) throws ParseException {
         if (rowData.get(32) != "" && rowData.get(33) != "") {
-            String[] firstRegimen = null;
-            if (!rowData.get(33).toString().equalsIgnoreCase("36.0")) {
-                firstRegimen = getRegimen(rowData.get(33).toString()).split("\\+");
 
-                for (int i = 0; i < firstRegimen.length; i++) {
-                    DrugOrder currentDrugOrder = new DrugOrder();
+                String str = getRegimen(rowData.get(33).toString());
+                if (str != null) {
+                    String[] firstRegimen = str.split("\\+");
 
-                    currentDrugOrder.setPatient(patient);
-                    currentDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
-                    currentDrugOrder.setStartDate(convertStringToDate.convert(rowData.get(32).toString()));
-                    currentDrugOrder.setFrequency("");
-                    currentDrugOrder.setDose(300.0);
-                    currentDrugOrder.setUnits("mg");
+                    for (int i = 0; i < firstRegimen.length; i++) {
+                        DrugOrder currentDrugOrder = new DrugOrder();
 
-                    if (firstRegimen[i] != null) {
-                        setDrugsConcepts(currentDrugOrder, firstRegimen[i]);
-                        Context.getOrderService().saveOrder(currentDrugOrder);
-                    }
+                        currentDrugOrder.setPatient(patient);
+                        currentDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
+                        currentDrugOrder.setStartDate(convertStringToDate.convert(rowData.get(32).toString()));
+                        currentDrugOrder.setFrequency("");
+                        currentDrugOrder.setDose(300.0);
+                        currentDrugOrder.setUnits("mg");
 
-                }
-            }
-
-            if (rowData.get(38) != "" && rowData.get(39) != "") {
-                String[] secondLineRegimen = null;
-                if (!rowData.get(39).toString().equalsIgnoreCase("36.0")) {
-                    secondLineRegimen = getRegimen(rowData.get(39).toString()).split("\\+");
-
-
-                    List<DrugOrder> drugOrderList = Context.getOrderService().getDrugOrdersByPatient(patient);
-                    for (DrugOrder drugOrder : drugOrderList) {
-                        drugOrder.setDiscontinued(true);
-                        drugOrder.setDiscontinuedDate(convertStringToDate.convert(rowData.get(38).toString()));
-                        getRegimenSwitchReason(drugOrder, rowData.get(41).toString());
-                    }
-
-                    for (int i = 0; i < secondLineRegimen.length; i++) {
-                        DrugOrder lastDrugOrder = new DrugOrder();
-
-                        lastDrugOrder.setPatient(patient);
-                        lastDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
-                        lastDrugOrder.setStartDate(convertStringToDate.convert(rowData.get(38).toString()));
-                        lastDrugOrder.setFrequency("");
-                        lastDrugOrder.setDose(300.00);
-                        lastDrugOrder.setUnits("mg");
-
-                        if (secondLineRegimen[i] != null) {
-                            setDrugsConcepts(lastDrugOrder, secondLineRegimen[i]);
-                            Context.getOrderService().saveOrder(lastDrugOrder);
+                        if (firstRegimen[i] != null) {
+                            setDrugsConcepts(currentDrugOrder, firstRegimen[i]);
+                            Context.getOrderService().saveOrder(currentDrugOrder);
                         }
 
                     }
                 }
+
+
+            if (rowData.get(38) != "" && rowData.get(39) != "") {
+
+
+                    String str1 = getRegimen(rowData.get(39).toString());
+                    if (str1 != null) {
+                        String[] secondLineRegimen = str1.split("\\+");
+
+                        List<DrugOrder> drugOrderList = Context.getOrderService().getDrugOrdersByPatient(patient);
+                        if (!drugOrderList.isEmpty()) {
+                            for (DrugOrder drugOrder : drugOrderList) {
+                                drugOrder.setDiscontinued(true);
+                                drugOrder.setDiscontinuedDate(convertStringToDate.convert(rowData.get(38).toString()));
+                                getRegimenSwitchReason(drugOrder, rowData.get(41).toString());
+                            }
+
+                            for (int i = 0; i < secondLineRegimen.length; i++) {
+                                DrugOrder lastDrugOrder = new DrugOrder();
+
+                                lastDrugOrder.setPatient(patient);
+                                lastDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
+                                lastDrugOrder.setStartDate(convertStringToDate.convert(rowData.get(38).toString()));
+                                lastDrugOrder.setFrequency("");
+                                lastDrugOrder.setDose(300.00);
+                                lastDrugOrder.setUnits("mg");
+
+                                if (secondLineRegimen[i] != null) {
+                                    setDrugsConcepts(lastDrugOrder, secondLineRegimen[i]);
+                                    Context.getOrderService().saveOrder(lastDrugOrder);
+                                }
+
+                            }
+                        }
+                    }
+
             }
         }
     }

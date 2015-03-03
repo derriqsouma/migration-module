@@ -76,18 +76,21 @@ public class RegimenSubstitution {
 
     private void saveDrugOrders(Patient patient, List<Object> rowData) throws ParseException {
 
-            if (rowData.get(2) != "" && rowData.get(3) != "") {
-                String[] substitutedRegimen = getRegimen(rowData.get(3).toString()).split("\\+");
+        if (rowData.get(38) != "" && rowData.get(39) != "") {
+
+            String str1 = getRegimen(rowData.get(39).toString());
+            if (str1 != null) {
+                String[] secondLineRegimen = str1.split("\\+");
 
                 List<DrugOrder> drugOrderList = Context.getOrderService().getDrugOrdersByPatient(patient);
                 if (!drugOrderList.isEmpty()) {
                     for (DrugOrder drugOrder : drugOrderList) {
                         drugOrder.setDiscontinued(true);
-                        drugOrder.setDiscontinuedDate(convertStringToDate.convert(rowData.get(2).toString()));
+                        drugOrder.setDiscontinuedDate(convertStringToDate.convert(rowData.get(38).toString()));
                         getRegimenSwitchReason(drugOrder, rowData.get(41).toString());
                     }
 
-                    for (int i = 0; i < substitutedRegimen.length; i++) {
+                    for (int i = 0; i < secondLineRegimen.length; i++) {
                         DrugOrder lastDrugOrder = new DrugOrder();
 
                         lastDrugOrder.setPatient(patient);
@@ -97,15 +100,16 @@ public class RegimenSubstitution {
                         lastDrugOrder.setDose(300.00);
                         lastDrugOrder.setUnits("mg");
 
-                        if (substitutedRegimen[i] != null) {
-                            setDrugsConcepts(lastDrugOrder, substitutedRegimen[i]);
+                        if (secondLineRegimen[i] != null) {
+                            setDrugsConcepts(lastDrugOrder, secondLineRegimen[i]);
                             Context.getOrderService().saveOrder(lastDrugOrder);
                         }
 
                     }
                 }
-
             }
+
+        }
 
     }
 
