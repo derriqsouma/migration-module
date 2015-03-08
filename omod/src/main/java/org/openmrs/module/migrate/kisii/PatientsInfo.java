@@ -343,30 +343,31 @@ public class PatientsInfo {
 
         if (rowData.get(18) != "") {
             Double age = 0.0;
+            String str =  rowData.get(18).toString();
             if (rowData.get(4) != "") {
                 age = Double.valueOf(rowData.get(4).toString());
             }
 
-            if (rowData.get(18).toString().equals("1.0")) {
+            if (str.equals("1.0")) {
                 if (age < 15 && age !=0.0) {
                     obs.setValueCoded(conceptService.getConceptByUuid("1220AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 } else {
                     obs.setValueCoded(conceptService.getConceptByUuid("1204AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 }
 
-            } else if (rowData.get(4).toString().equals("2.0")) {
+            } else if (str.equals("2.0")) {
                 if (age < 15 && age !=0.0) {
                     obs.setValueCoded(conceptService.getConceptByUuid("1221AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 } else {
                     obs.setValueCoded(conceptService.getConceptByUuid("1205AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 }
-            } else if (rowData.get(4).toString().equals("3.0")) {
+            } else if (str.equals("3.0")) {
                 if (age < 15 && age !=0.0) {
                     obs.setValueCoded(conceptService.getConceptByUuid("1222AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 } else {
                     obs.setValueCoded(conceptService.getConceptByUuid("1206AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 }
-            } else if (rowData.get(4).toString().equals("4.0")) {
+            } else if (str.equals("4.0")) {
                 if (age < 15 && age !=0.0) {
                     obs.setValueCoded(conceptService.getConceptByUuid("1223AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
                 } else {

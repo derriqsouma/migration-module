@@ -54,7 +54,8 @@ public class RegimenSubstitution {
         for (int i = 1; i < sheetData.size(); i++) {
             patient = null;
             List<Object> rowData = sheetData.get(i);
-            String upn = rowData.get(1).toString();
+            String[] upn1 = String.valueOf(rowData.get(1)).replaceAll("\\.", "").split("E");
+            String upn = upn1[0];
 //            String amrId = rowData.get(0).toString();
 
             List<Patient> patientListUsingUpn = patientService.getPatients(null, upn, null, true);
@@ -76,9 +77,9 @@ public class RegimenSubstitution {
 
     private void saveDrugOrders(Patient patient, List<Object> rowData) throws ParseException {
 
-        if (rowData.get(38) != "" && rowData.get(39) != "") {
+        if (rowData.get(2) != "" && rowData.get(3) != "") {
 
-            String str1 = getRegimen(rowData.get(39).toString());
+            String str1 = getRegimen(rowData.get(3).toString());
             if (str1 != null) {
                 String[] secondLineRegimen = str1.split("\\+");
 
@@ -86,7 +87,7 @@ public class RegimenSubstitution {
                 if (!drugOrderList.isEmpty()) {
                     for (DrugOrder drugOrder : drugOrderList) {
                         drugOrder.setDiscontinued(true);
-                        drugOrder.setDiscontinuedDate(convertStringToDate.convert(rowData.get(38).toString()));
+                        drugOrder.setDiscontinuedDate(convertStringToDate.convert(rowData.get(2).toString()));
                         getRegimenSwitchReason(drugOrder, rowData.get(41).toString());
                     }
 
@@ -95,7 +96,7 @@ public class RegimenSubstitution {
 
                         lastDrugOrder.setPatient(patient);
                         lastDrugOrder.setOrderType(Context.getOrderService().getOrderTypeByUuid("131168f4-15f5-102d-96e4-000c29c2a5d7"));
-                        lastDrugOrder.setStartDate(convertStringToDate.convert(rowData.get(38).toString()));
+                        lastDrugOrder.setStartDate(convertStringToDate.convert(rowData.get(2).toString()));
                         lastDrugOrder.setFrequency("");
                         lastDrugOrder.setDose(300.00);
                         lastDrugOrder.setUnits("mg");

@@ -50,7 +50,7 @@ public class ReadExcelSheetKisii {
                     continue;
                 }
 
-                int expectedColumns = 55;
+                int expectedColumns = 73;
                 List<Object> rowData = new ArrayList();
 
                 for (int i = 0; i < expectedColumns; i++) {

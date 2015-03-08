@@ -118,7 +118,7 @@
             </form>
             <br><br>
             <form action="migrationHome.page" method="post">
-                <input type="file" name="kisii_visits" id="kisii_visits" size="50"/>
+                visits<input type="file" name="kisii_visits" id="kisii_visits" size="50"/>
                 <br/><br/>
                 <div class="ke-form-footer">
                     <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
@@ -127,7 +127,25 @@
 
             <br><br>
             <form action="migrationHome.page" method="post">
-                <input type="file" name="regmen_subs" id="regmen_subs" size="50"/>
+                regimen<input type="file" name="regmen_subs" id="regmen_subs" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
+
+            <br><br>
+            <form action="migrationHome.page" method="post">
+                address<input type="file" name="address" id="address" size="50"/>
+                <br/><br/>
+                <div class="ke-form-footer">
+                    <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
+                </div>
+            </form>
+
+            <br><br>
+            <form action="migrationHome.page" method="post">
+                family<input type="file" name="family" id="family" size="50"/>
                 <br/><br/>
                 <div class="ke-form-footer">
                     <button type="submit"><img src="${ ui.resourceLink("kenyaui", "images/glyphs/ok.png") }" />Submit</button>
