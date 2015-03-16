@@ -106,13 +106,13 @@ public class PatientsInfo {
 
                 PatientIdentifier openmrsId = new PatientIdentifier();
                 //generating open mrs id
-                PatientIdentifierType openmrsIdType = patientService.getPatientIdentifierTypeByUuid("dfacd928-0370-4315-99d7-6ec1c9f7ae76");
+               /* PatientIdentifierType openmrsIdType = patientService.getPatientIdentifierTypeByUuid("dfacd928-0370-4315-99d7-6ec1c9f7ae76");
                 String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "migration");
                 openmrsId.setIdentifierType(openmrsIdType);
                 openmrsId.setDateCreated(new Date());
                 openmrsId.setLocation(defaultLocation);
                 openmrsId.setIdentifier(generated);
-                openmrsId.setVoided(false);
+                openmrsId.setVoided(false);*/
 
                 PatientIdentifier upn;
                 if (rowData.get(0) != "") {
@@ -125,7 +125,8 @@ public class PatientsInfo {
                     upn.setVoided(false);
                     upn.setPreferred(true);
 
-                    patient.addIdentifiers(Arrays.asList(upn, openmrsId));
+//                    patient.addIdentifiers(Arrays.asList(upn, openmrsId));
+                    patient.addIdentifier(upn);
                     if (!patientService.isIdentifierInUseByAnotherPatient(upn)) {
                         System.out.println("\n\n\n " + upn + "  " + patient.getGivenName() + " \n\n\n");
                         patientService.savePatient(patient);//saving the patient

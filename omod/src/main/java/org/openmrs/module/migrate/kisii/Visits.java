@@ -65,7 +65,7 @@ public class Visits {
 
                 } else {
                     patient = patientService.getPatient(patientListUsingUpn.get(0).getPatientId());
-                    System.out.println("\n\n\n ****" + patient.getFamilyName());
+                    System.out.println("\n\n\n "+rowData.get(0).toString()+"****" + patient.getFamilyName());
                     visits(patient, rowData);
                 }
             }
@@ -213,10 +213,10 @@ public class Visits {
         if (rowData.get(70) != "" || convertStringToDate.convert(visitDate[0]).before(new Date())) {
             encounterService.saveEncounter(encounter);
         }
-
+/*
         if (rowData.get(39) != ""){
             enrollIntoTBProgram(patient,rowData);
-        }
+        }*/
 
     }
 
