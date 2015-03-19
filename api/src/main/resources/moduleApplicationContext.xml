@@ -43,6 +43,4 @@
     </bean>
 	
 	<!-- Services accessible via Context.getService() -->
-
-	
 </beans>

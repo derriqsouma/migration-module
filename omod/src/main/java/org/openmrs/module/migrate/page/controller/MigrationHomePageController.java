@@ -26,6 +26,7 @@ import javax.servlet.http.HttpSession;
 
 @AppPage(MigrateConstant.APP_MIGRATE)
 public class MigrationHomePageController {
+    String globalPath = "/home/derric/Desktop/migration/migration";
 
     @RequestMapping()
     public void controller(UiUtils ui,
@@ -47,63 +48,63 @@ public class MigrationHomePageController {
                            @SpringBean KenyaUiUtils kenyaUi) throws Exception {
 
         if (kakuma_patients != "") {
-            String path = "/home/derric/Desktop/migration/migration/kakuma/" + kakuma_patients;
+            String path = globalPath + "/kakuma/" + kakuma_patients;
             KakumaPatients kakumaPatients = new KakumaPatients(path, session, kenyaUi);
             kakumaPatients.init();
 
         }
         if (kakuma_visits != "") {
-            String path = "/home/derric/Desktop/migration/migration/kakuma/" + kakuma_visits;
+            String path = globalPath + "/kakuma/" + kakuma_visits;
             KakumaVisits kakumaVisits = new KakumaVisits(path, session, kenyaUi);
             kakumaVisits.init();
 
         }
         if (kakuma_eid != "") {
-            String path = "/home/derric/Desktop/migration/migration/kakuma/" + kakuma_eid;
+            String path = globalPath + "/kakuma/" + kakuma_eid;
             KakumaEid kakumaEid= new KakumaEid(path, session, kenyaUi);
             kakumaEid.init();
 
         }
 
         if (maragua_patients != "") {
-            String path = "/home/derric/Desktop/migration/migration/maragua/" + maragua_patients;
+            String path = globalPath + "/maragua/" + maragua_patients;
 
             MaraguaPatients maraguaPatients = new MaraguaPatients(path, session, kenyaUi);
             maraguaPatients.init();
         }
         if (maragua_visits != "") {
-            String path = "/home/derric/Desktop/migration/migration/maragua/" + maragua_visits;
+            String path = globalPath + "/maragua/" + maragua_visits;
 
             MaraguaVisits maraguaVisits = new MaraguaVisits(path, session, kenyaUi);
             maraguaVisits.init();
         }
 
         if (kisii_patients != "") {
-            String path = "/home/derric/Desktop/migration/migration/kisii/" + kisii_patients;
+            String path = globalPath + "/kisii/" + kisii_patients;
             PatientsInfo patientsInfo = new PatientsInfo(path, session, kenyaUi);
             patientsInfo.init();
         }
 
         if (kisii_visits != "") {
-            String path = "/home/derric/Desktop/migration/migration/kisii/" + kisii_visits;
+            String path = globalPath + "/kisii/" + kisii_visits;
             Visits visits = new Visits(path, session, kenyaUi);
             visits.init();
 
         }
         if (regmen_subs != "") {
-            String path = "/home/derric/Desktop/migration/migration/kisii/" + regmen_subs;
+            String path = globalPath + "/kisii/" + regmen_subs;
             RegimenSubstitution regimenSubstitution = new RegimenSubstitution(path, session, kenyaUi);
             regimenSubstitution.init();
 
         }
         if (address != "") {
-            String path = "/home/derric/Desktop/migration/migration/kisii/" + address;
+            String path = globalPath + "/kisii/" + address;
             AddressInfo addressInfo= new AddressInfo(path, session, kenyaUi);
             addressInfo.init();
 
         }
         if (family != "") {
-            String path = "/home/derric/Desktop/migration/migration/kisii/" + family;
+            String path = globalPath + "/kisii/" + family;
             FamilyInfo familyInfo= new FamilyInfo(path, session, kenyaUi);
             familyInfo.init();
 
