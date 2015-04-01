@@ -14,4 +14,9 @@ public class MigrateConstant {
      * App IDs
      */
     public static final String APP_MIGRATE = MODULE_ID + ".migration";
+
+    /**
+     * Global property names
+     */
+    public static final String FILE_PATH = MODULE_ID + ".filePath";
 }
